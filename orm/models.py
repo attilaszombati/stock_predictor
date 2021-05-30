@@ -2,8 +2,7 @@ import datetime
 import logging
 from typing import List, Any
 
-from peewee import Model, fn, IntegrityError, ModelBase, MySQLDatabase, DateTimeField, CharField, IntegerField, \
-    BooleanField
+from peewee import Model, fn, IntegrityError, ModelBase, MySQLDatabase, DateTimeField, CharField, IntegerField
 from playhouse.shortcuts import model_to_dict
 
 logger = logging.getLogger(__name__)
