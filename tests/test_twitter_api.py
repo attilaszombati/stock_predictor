@@ -1,6 +1,2 @@
-import pytest
-
-
-@pytest.fixture()
-def twitter_api():
+def test_twitter_api():
     assert True
