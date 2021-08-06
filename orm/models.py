@@ -14,7 +14,10 @@ from peewee import (
     BooleanField,
 )
 from playhouse.shortcuts import model_to_dict
-from scraper.context import mysql_db
+
+from scraper.context import get_mysql_db, get_secrets
+
+mysql_db = get_mysql_db(get_secrets())
 
 logger = logging.getLogger(__name__)
 

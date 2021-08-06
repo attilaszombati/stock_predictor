@@ -6,7 +6,6 @@ from playhouse.shortcuts import model_to_dict
 
 # Using TwitterSearchScraper to scrape data and append tweets to list
 from orm.models import TwitterDataModel
-from scraper.context import mysql_db
 
 
 def scraping_data():
@@ -29,7 +28,9 @@ def scraping_data():
 
 def scraping_data_from_hashtag():
     max_item = sntwitter.TwitterHashtagScraper('bitcoin').get_items()
-    preprocess = sorted(max_item, key=lambda x: x.replyCount > 10 and x.retweetCount > 10 and x.likeCount > 10)
+    preprocess = sorted(
+        max_item, key=lambda x: x.replyCount > 10 and x.retweetCount > 10 and x.likeCount > 10
+    )
     for i, tweet in enumerate(preprocess):
         try:
             yield tweet
@@ -65,7 +66,9 @@ def create_models_from_scraping():
             url=data.url,
             # scraped_at=data.scraped_at,
             user_name=data.user.username,
-        ) for data in scraping_data())
+        )
+        for data in scraping_data()
+    )
 
 
 def apply_all_fixture():
@@ -74,25 +77,13 @@ def apply_all_fixture():
         f.insert(data).on_conflict(update=data).execute()
 
 
-def init_database():
+def init_database(password):
     conn = pymysql.connect(
         unix_socket="/cloudsql/crawling-315317:europe-west1:mysql-03",
         user='root',
-        password='attilaattila123',
+        password=password,
     )
 
-    sql = (
-        f'CREATE DATABASE IF NOT EXISTS twitter'
-    )
+    sql = 'CREATE DATABASE IF NOT EXISTS twitter'
     conn.cursor().execute(sql)
     conn.close()
-
-
-def handler():
-    init_database()
-    mysql_db.create_tables([TwitterDataModel])
-    apply_all_fixture()
-
-
-if __name__ == '__main__':
-    handler()
