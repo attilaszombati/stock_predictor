@@ -11,8 +11,10 @@ from orm.models import mysql_db, RedditDataModel
 # Using RedditSubredditScraper to scrape data
 def scraping_data(last_saved=None):
     for i, reddit in enumerate(
-            snreddit.RedditSubredditScraper(name='wallstreetbets',
-                                            comments=False, before='1613751542').get_items()):
+        snreddit.RedditSubredditScraper(
+            name='wallstreetbets', comments=False, before='1613751542'
+        ).get_items()
+    ):
         try:
             last_saved = reddit
             yield reddit
@@ -31,8 +33,11 @@ def create_models_from_scraping():
             self_text=data.selftext,
             subreddit=data.subreddit,
             title=data.title,
-            url=data.url
-        ) for data in scraping_data())
+            url=data.url,
+        )
+        for data in scraping_data()
+    )
+
 
 def apply_all_fixture():
     for f in create_models_from_scraping():
@@ -47,9 +52,7 @@ def init_database():
         password='',
     )
 
-    sql = (
-        f'CREATE DATABASE IF NOT EXISTS reddit'
-    )
+    sql = f'CREATE DATABASE IF NOT EXISTS reddit'
     conn.cursor().execute(sql)
     conn.close()
 

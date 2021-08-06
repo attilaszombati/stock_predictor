@@ -2,13 +2,21 @@ import datetime
 import logging
 from typing import List, Any
 
-from peewee import Model, fn, IntegrityError, ModelBase, MySQLDatabase, DateTimeField, CharField, IntegerField
+from peewee import (
+    Model,
+    fn,
+    IntegrityError,
+    ModelBase,
+    DateTimeField,
+    CharField,
+    IntegerField,
+    DoesNotExist,
+    BooleanField,
+)
 from playhouse.shortcuts import model_to_dict
+from scraper.context import mysql_db
 
 logger = logging.getLogger(__name__)
-
-mysql_db = MySQLDatabase(user='root', password='',
-                         host='localhost', port=3306, database='reddit')
 
 
 class BaseModel(Model):
@@ -24,7 +32,7 @@ class BaseModel(Model):
         models = []
 
         for index in range(0, len(rows), batch_size):
-            rows_batch = rows[index: index + batch_size]
+            rows_batch = rows[index : index + batch_size]
             # pylint: disable=no-value-for-parameter
             cls.insert_many(rows_batch).execute()
 
@@ -93,39 +101,44 @@ def create_add_to_models_meta_class(model_list: List[BaseModel]) -> type:
 
 
 class TwitterDataModel(BaseModel):
-    url = CharField()
-    # scraped_at = DateTimeField()
-    # content = CharField()
-    # renderedContent = CharField()
-    # content_id = IntegerField(null=False)
-    user_name = CharField()
-    # display_name = CharField()
-    # user_id = IntegerField(null=False)
-    # description = CharField()
-    # raw_description = CharField()
-    # verified = BooleanField()
+    cashtags = CharField(null=True)
+    content = CharField()
+    conversation_id = IntegerField()
+    coordinates = IntegerField(null=True)
     created_at = DateTimeField()
-    # followers_count = IntegerField(null=False)
-    # friends_count = IntegerField(null=False)
-    # statuses_count = IntegerField(null=False)
-    # favourites_count = IntegerField(null=False)
-    # listed_count = IntegerField(null=False)
-    # media_count = IntegerField(null=False)
-    # location = CharField()
-    # protected = BooleanField()
-    # linkUrl = CharField()
-    # profile_image_url = CharField()
-    # profile_banner_url = CharField()
-    reply_count = IntegerField(null=False)
-    retweet_count = IntegerField(null=False)
-    like_count = IntegerField(null=False)
-    # quote_count = IntegerField(null=False)
-    # conversation_id = IntegerField(null=False)
-    # id = None
+    hastags = CharField(null=True)
+    in_reply_to_tweet_id = IntegerField(null=True)
+    in_reply_to_user = CharField(null=True)
+    language = CharField()
+    like_count = IntegerField(null=True)
+    mentioned_users = CharField
+    outlinks = CharField(null=True)
+    place = CharField(null=True)
+    quote_count = IntegerField()
+    quoted_tweet = BooleanField(null=True)
+    reply_count = IntegerField(null=True)
+    retweet_count = IntegerField(null=True)
+    retweeted_tweet = BooleanField(null=True)
+    source = CharField()
+    source_url = CharField()
+    url = CharField()
+    user_name = CharField()
+    scraped_at = DateTimeField(default=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
     class Meta:
         database = mysql_db
-        table_name = 'bitcoin'
+        table_name = 'elon_musk'
+
+    @classmethod
+    def get_latest_elem_from_table(cls):
+        try:
+            last_elem = cls.select(cls).order_by(cls.created_at.desc()).get()
+        except DoesNotExist:
+            return None
+        else:
+            print(f'The oldest tweet has been created at: {last_elem.created_at}')
+            return last_elem
+
 
 class RedditDataModel(BaseModel):
     author = CharField(null=True)

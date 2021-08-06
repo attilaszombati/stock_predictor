@@ -8,7 +8,7 @@ from orm.models import RedditOfficialApiModel, mysql_db
 reddit = Reddit(
     client_id='YgNm5NHkXxrMwA',
     client_secret='_OA_8yPNDDGufG9VSSxLx2mvPsPQFw',
-    user_agent='szates_96'
+    user_agent='szates_96',
 )
 
 
@@ -49,7 +49,8 @@ def official_reddit_api():
             view_count=data.view_count,
             # upvote=data.upvote,
             # upvote_ratio=data.upvote_ratio,
-        ) for data in get_official_reddit_data()
+        )
+        for data in get_official_reddit_data()
     )
 
 
