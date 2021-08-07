@@ -1,5 +1,6 @@
 # pylint:disable=missing-function-docstring, missing-module-docstring
 # pylint:disable=import-error
+import logging
 import time
 from datetime import datetime
 
@@ -23,6 +24,8 @@ tables = {
     'KamalaHarris': TwitterDataModelKamalaHarris,
 }
 
+logger = logging.getLogger(__name__)
+
 def scraping_data(scraping_type: str = 'since', user: str = 'elonmusk'):
     if scraping_type == 'since':
         last_scraped = tables.get(user).get_latest_elem_from_table()
@@ -38,12 +41,13 @@ def scraping_data(scraping_type: str = 'since', user: str = 'elonmusk'):
 
     if scraping_type == 'since' and int(time.time()) - 86400 > int(since_time[:-2]):
         query = f'from:{user} {since_time[:-2]} until_time:{int(time.time()) - 86400}'
+        print(f'The search query is : {query}')
+        max_item = sntwitter.TwitterSearchScraper(query).get_items()
+        for tweet in max_item:
+            yield tweet
     else:
-        raise SystemExit('Need to wait more time! At least 1 day after the last tweet')
-    print(f'The search query is : {query}')
-    max_item = sntwitter.TwitterSearchScraper(query).get_items()
-    for tweet in max_item:
-        yield tweet
+        logger.warning('Need to wait more time! At least 1 day after the last tweet')
+        print('Need to wait more time!')
     print('X' * 50)
     print('End of scraping')
     print('X' * 50)
