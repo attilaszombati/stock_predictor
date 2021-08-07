@@ -14,6 +14,7 @@ workflows:
     jobs:
       - build-and-test
       - deploy:
+          type: approval
           requires:
             - build-and-test
 
@@ -40,7 +41,7 @@ jobs:
       - run:
           name: Run tests
           # This assumes pytest is installed via the install-package step above
-          command: pytest
+          command: ./test.sh
   deploy:
     docker:
       - image: google/cloud-sdk

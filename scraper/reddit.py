@@ -1,27 +1,16 @@
-import time
-from datetime import datetime
+# pylint:disable=import-error
 import pymysql
 import snscrape.modules.reddit as snreddit
 
-from snscrape.base import ScraperException
-
-from orm.models import mysql_db, RedditDataModel
+from orm.models import RedditDataModel
 
 
 # Using RedditSubredditScraper to scrape data
 def scraping_data(last_saved=None):
-    for i, reddit in enumerate(
-        snreddit.RedditSubredditScraper(
-            name='wallstreetbets', comments=False, before='1613751542'
-        ).get_items()
-    ):
-        try:
-            last_saved = reddit
-            yield reddit
-        except Exception:
-            print(last_saved)
-            time.sleep(100)
-            scraping_data(last_saved=datetime.fromisoformat(str(last_saved.created)).timestamp())
+    for reddit in snreddit.RedditSubredditScraper(
+        name='wallstreetbets', comments=False, before='1613751542'
+    ).get_items():
+        yield reddit
 
 
 def create_models_from_scraping():
@@ -44,15 +33,14 @@ def apply_all_fixture():
         f.insert_if_not_exists()
 
 
-def init_database():
+def init_database(password):
     conn = pymysql.connect(
-        host='localhost',
-        port=3306,
+        unix_socket="/cloudsql/crawling-315317:europe-west1:mysql-03",
         user='root',
-        password='',
+        password=password,
     )
 
-    sql = f'CREATE DATABASE IF NOT EXISTS reddit'
+    sql = 'CREATE DATABASE IF NOT EXISTS reddit'
     conn.cursor().execute(sql)
     conn.close()
 

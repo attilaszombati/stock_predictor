@@ -4,3 +4,4 @@ git+https://github.com/JustAnotherArchivist/snscrape.git
 pytest==6.2.4
 PyMySQL==1.0.2
 google-cloud-secret-manager
+praw==7.4.0

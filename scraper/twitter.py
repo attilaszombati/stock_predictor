@@ -1,3 +1,4 @@
+# pylint:disable=import-error
 from datetime import datetime
 
 import pymysql
@@ -8,7 +9,7 @@ from playhouse.shortcuts import model_to_dict
 from orm.models import TwitterDataModel
 
 
-def scraping_data():
+def scraping_data(user: str = 'elonmusk'):
     last_scraped = TwitterDataModel.get_latest_elem_from_table()
     if last_scraped:
         last_record_time = datetime.strptime(str(last_scraped.created_at), "%Y-%m-%d %H:%M:%S")
@@ -16,10 +17,10 @@ def scraping_data():
         print(f'The since_time variable is : {since_time}')
     else:
         since_time = 'since_time:964381815'
-    query = f'from:elonmusk {since_time[:-2]}'
+    query = f'from:{user} {since_time[:-2]}'
     print(f'The search query is : {query}')
     max_item = sntwitter.TwitterSearchScraper(query).get_items()
-    for i, tweet in enumerate(max_item):
+    for tweet in max_item:
         yield tweet
     print('X' * 50)
     print('End of scraping')
@@ -31,13 +32,8 @@ def scraping_data_from_hashtag():
     preprocess = sorted(
         max_item, key=lambda x: x.replyCount > 10 and x.retweetCount > 10 and x.likeCount > 10
     )
-    for i, tweet in enumerate(preprocess):
-        try:
-            yield tweet
-        except StopIteration:
-            raise StopIteration('End of scraping')
-        else:
-            continue
+    for tweet in preprocess:
+        yield tweet
 
 
 def create_models_from_scraping():
