@@ -1,6 +1,6 @@
 from orm.models import TwitterDataModel
-from scraper.context import get_mysql_db, get_secrets
-from scraper.twitter import init_database, apply_all_fixture
+from scraper.context import get_mysql_db, get_secrets, init_database
+from scraper.twitter import apply_all_fixture
 
 
 def handler(request):

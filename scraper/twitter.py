@@ -1,7 +1,6 @@
 # pylint:disable=import-error
 from datetime import datetime
 
-import pymysql
 import snscrape.modules.twitter as sntwitter
 from playhouse.shortcuts import model_to_dict
 
@@ -71,15 +70,3 @@ def apply_all_fixture():
     for f in create_models_from_scraping():
         data = model_to_dict(f, recurse=False)
         f.insert(data).on_conflict(update=data).execute()
-
-
-def init_database(password):
-    conn = pymysql.connect(
-        unix_socket="/cloudsql/crawling-315317:europe-west1:mysql-03",
-        user='root',
-        password=password,
-    )
-
-    sql = 'CREATE DATABASE IF NOT EXISTS twitter'
-    conn.cursor().execute(sql)
-    conn.close()

@@ -1,5 +1,6 @@
 # pylint:disable=no-name-in-module
 # pylint:disable=import-error
+import pymysql
 from google.cloud import secretmanager
 from peewee import MySQLDatabase
 
@@ -20,3 +21,15 @@ def get_mysql_db(password):
         database='twitter',
     )
     return mysql_db
+
+
+def init_database(password: str, database: str = 'twitter'):
+    conn = pymysql.connect(
+        unix_socket="/cloudsql/crawling-315317:europe-west1:mysql-03",
+        user='root',
+        password=password,
+    )
+
+    sql = f'CREATE DATABASE IF NOT EXISTS {database}'
+    conn.cursor().execute(sql)
+    conn.close()
