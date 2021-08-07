@@ -13,18 +13,11 @@ def handler(request):
     except ValueError as json_error:
         print(f"Error decoding JSON: {json_error}")
         return "JSON Error", 400
-    print(request_json)
     user = request_json.get('USER', '')
     database = request_json.get('DATABASE', 'twitter')
-    print('X' * 50)
-    print(f'The user is : {user}, the database is : {database}')
-    print('X' * 50)
     payload = get_secrets()
-
     init_database(database=database,password=payload)
-
     mysql_db = get_mysql_db(password=payload, database=database)
-
     mysql_db.create_tables([TwitterDataModel])
     apply_all_fixture(user)
     return {'done': 1}
