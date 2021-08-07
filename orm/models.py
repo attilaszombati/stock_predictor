@@ -113,7 +113,7 @@ class TwitterBaseModel(BaseModel):
     cashtags = CharField(null=True)
     content = CharField()
     conversation_id = IntegerField()
-    coordinates = IntegerField(null=True)
+    coordinates = CharField(null=True)
     created_at = DateTimeField()
     hastags = CharField(null=True)
     in_reply_to_tweet_id = IntegerField(null=True)
