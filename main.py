@@ -1,12 +1,15 @@
 # pylint:disable=missing-function-docstring, missing-module-docstring
+import json
+
 from orm.models import TwitterDataModel
 from scraper.context import get_mysql_db, get_secrets, init_database
 from scraper.twitter import apply_all_fixture
 
 
 def handler(request):
-    user = request.args.get('USER', '')
-    database = request.args.get('DATABASE', 'twitter')
+    request = json.loads(request)
+    user = request.get('USER', '')
+    database = request.get('DATABASE', 'twitter')
     print('X' * 50)
     print(f'The user is : {user}, the database is : {database}')
     print('X' * 50)
