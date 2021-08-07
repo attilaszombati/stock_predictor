@@ -39,3 +39,10 @@ jobs:
           name: Run tests
           # This assumes pytest is installed via the install-package step above
           command: pytest
+  deploy:
+    docker:
+      - image: google/cloud-sdk
+    steps:
+      - run:
+          name: Deploy lambda function
+          command: echo "deploy will happen"
