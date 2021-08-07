@@ -32,6 +32,7 @@ def handler(request):
     init_database(database=database, password=payload)
     mysql_db = get_mysql_db(password=payload, database=database)
     for user in users:
-        mysql_db.create_tables([tables.get(user)])
+        table = tables.get(user)
+        mysql_db.create_tables([table])
         apply_all_fixture(scraping_type=scraping_type, user=user)
     return {'done': 1}
