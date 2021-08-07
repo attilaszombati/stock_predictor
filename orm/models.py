@@ -145,6 +145,16 @@ class TwitterDataModelElonMusk(BaseModel):
         except DoesNotExist:
             return None
         else:
+            print(f'The latest tweet has been created at: {last_elem.created_at}')
+            return last_elem
+
+    @classmethod
+    def get_oldest_elem_from_table(cls):
+        try:
+            last_elem = cls.select(cls).order_by(cls.created_at.asc()).get()
+        except DoesNotExist:
+            return None
+        else:
             print(f'The oldest tweet has been created at: {last_elem.created_at}')
             return last_elem
 

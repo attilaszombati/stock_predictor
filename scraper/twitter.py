@@ -18,12 +18,15 @@ tables = {
     'BarackObama': TwitterDataModelBarackObama,
 }
 
-def scraping_data(user: str = 'elonmusk'):
-    last_scraped = tables.get(user).get_latest_elem_from_table()
+def scraping_data(scraping_type: str = 'since', user: str = 'elonmusk'):
+    if scraping_type == 'since':
+        last_scraped = tables.get(user).get_latest_elem_from_table()
+    else:
+        last_scraped = tables.get(user).get_oldest_elem_from_table()
     if last_scraped:
         last_record_time = datetime.strptime(str(last_scraped.created_at), "%Y-%m-%d %H:%M:%S")
-        since_time = f'since_time:{last_record_time.timestamp()}'
-        print(f'The since_time variable is : {since_time}')
+        since_time = f'{scraping_type}_time:{last_record_time.timestamp()}'
+        print(f'The {scraping_type}_time variable is : {since_time}')
     else:
         since_time = 'since_time:964381815'
     query = f'from:{user} {since_time[:-2]}'
@@ -45,7 +48,7 @@ def scraping_data_from_hashtag():
         yield tweet
 
 
-def create_models_from_scraping(user):
+def create_models_from_scraping(scraping_type, user):
     yield from (
         tables.get(user)(
             cashtags=data.cashtags,
@@ -72,11 +75,11 @@ def create_models_from_scraping(user):
             # scraped_at=data.scraped_at,
             user_name=data.user.username,
         )
-        for data in scraping_data(user=user)
+        for data in scraping_data(scraping_type=scraping_type, user=user)
     )
 
 
-def apply_all_fixture(user):
-    for fixture in create_models_from_scraping(user=user):
+def apply_all_fixture(scraping_type, user):
+    for fixture in create_models_from_scraping(scraping_type=scraping_type, user=user):
         data = model_to_dict(fixture, recurse=False)
         fixture.insert(data).on_conflict(update=data).execute()

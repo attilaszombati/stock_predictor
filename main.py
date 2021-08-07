@@ -25,9 +25,10 @@ def handler(request):
         return "JSON Error", 400
     user = request_json.get('USER', '')
     database = request_json.get('DATABASE', 'twitter')
+    scraping_type = request_json.get('SCRAPING_TYPE', 'since')
     payload = get_secrets()
     init_database(database=database, password=payload)
     mysql_db = get_mysql_db(password=payload, database=database)
     mysql_db.create_tables([tables.get(user)])
-    apply_all_fixture(user)
+    apply_all_fixture(scraping_type=scraping_type, user=user)
     return {'done': 1}
