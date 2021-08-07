@@ -5,8 +5,8 @@ from scraper.twitter import apply_all_fixture
 
 
 def handler(request):
-    user = request.get('USER', '')
-    database = request.get('DATABASE', 'twitter')
+    user = request.args.get('USER', '')
+    database = request.args.get('DATABASE', 'twitter')
     print('X' * 50)
     print(f'The user is : {user}, the database is : {database}')
     print('X' * 50)
