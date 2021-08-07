@@ -43,6 +43,7 @@ jobs:
     docker:
       - image: google/cloud-sdk
     steps:
+      - checkout
       - run:
           name: Deploy lambda function
           command: echo "deploy will happen"
