@@ -1,4 +1,4 @@
-# pylint:disable=import-error
+# pylint:disable=import-error, missing-function-docstring, missing-module-docstring
 import time
 from datetime import datetime
 
@@ -56,16 +56,10 @@ def official_reddit_api():
 
 
 def apply_all_fixture():
-    for f in official_reddit_api():
-        f.insert_if_not_exists()
+    for fixture in official_reddit_api():
+        fixture.insert_if_not_exists()
 
 
 if __name__ == '__main__':
-    # for i, post in enumerate(reddit.subreddit("wallstreetbets").new(limit=1)):
-    #     if i < 2:
-    #         print(dir(post))
-    #         print(post.created)
     mysql_db.create_tables([RedditOfficialApiModel])
     apply_all_fixture()
-    # print([datetime.fromtimestamp(i.created).strftime('%Y-%m-%d %H:%M:%S.%f')
-    #       for i in reddit.subreddit("wallstreetbets").new(limit=600, params={'before': 1618513660})])

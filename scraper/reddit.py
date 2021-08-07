@@ -1,4 +1,4 @@
-# pylint:disable=import-error
+# pylint:disable=import-error, missing-function-docstring, missing-module-docstring
 import snscrape.modules.reddit as snreddit
 
 from orm.models import RedditDataModel
@@ -6,7 +6,7 @@ from orm.models import RedditDataModel
 from scraper.context import init_database
 
 
-def scraping_data(last_saved=None):
+def scraping_data():
     # pylint:disable=no-member
     for reddit in snreddit.RedditSubredditScraper(
         name='wallstreetbets', comments=False, before='1613751542'
@@ -29,13 +29,13 @@ def create_models_from_scraping():
     )
 
 
-def apply_all_fixture():
-    for f in create_models_from_scraping():
-        f.insert_if_not_exists()
+def apply_all_fixture_from_reddit():
+    for fixture in create_models_from_scraping():
+        fixture.insert_if_not_exists()
 
 
 if __name__ == '__main__':
     init_database(password='', database='reddit')
     # mysql_db# .create_tables([RedditDataModel])
-    apply_all_fixture()
+    apply_all_fixture_from_reddit()
     # scraping_data()

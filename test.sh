@@ -2,5 +2,5 @@
 
 set -eux
 
-llintpy llintpy.yml
+pylint main.py orm scraper
 pytest -sv tests

@@ -1,3 +1,4 @@
+# pylint:disable=missing-function-docstring, missing-module-docstring
 # pylint:disable=import-error
 from datetime import datetime
 
@@ -67,6 +68,6 @@ def create_models_from_scraping():
 
 
 def apply_all_fixture():
-    for f in create_models_from_scraping():
-        data = model_to_dict(f, recurse=False)
-        f.insert(data).on_conflict(update=data).execute()
+    for fixture in create_models_from_scraping():
+        data = model_to_dict(fixture, recurse=False)
+        fixture.insert(data).on_conflict(update=data).execute()

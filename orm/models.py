@@ -1,3 +1,4 @@
+# pylint:disable=missing-function-docstring, missing-module-docstring, missing-class-docstring
 import datetime
 import logging
 from typing import List, Any
@@ -35,14 +36,15 @@ class BaseModel(Model):
         models = []
 
         for index in range(0, len(rows), batch_size):
-            rows_batch = rows[index : index + batch_size]
+            rows_batch = rows[index: index + batch_size]
             # pylint: disable=no-value-for-parameter
             cls.insert_many(rows_batch).execute()
 
             newly_created = list(cls.select().where(cls._meta.primary_key >= fn.last_insert_id()))
             if len(newly_created) != len(rows_batch):
                 raise ValueError(
-                    f'The newly created record count ({len(newly_created)}) does not match with the '
+                    f'The newly created record count ({len(newly_created)})'
+                    f' does not match with the '
                     f'record count sent to the DB ({len(rows_batch)})'
                 )
             models.extend(newly_created)
@@ -65,8 +67,10 @@ class BaseModel(Model):
         return super().create_table(safe, **kwargs)
 
     class Meta:
+        # pylint:disable=too-few-public-methods
         legacy_table_names = False
 
+    # pylint:disable=logging-fstring-interpolation
     def insert_if_not_exists(self) -> bool:
         """
         Try to insert the item in the database.
@@ -86,7 +90,8 @@ class BaseModel(Model):
             return False
         except Exception as err:  # pylint: disable=broad-except
             logger.warning(
-                f'Couldn\'t insert: {self._meta.table_name} {model_to_dict(self, max_depth=0)}|\n{err}'
+                f'Couldn\'t insert: {self._meta.table_name}'
+                f' {model_to_dict(self, max_depth=0)}|\n{err}'
             )
             return False
         return True
@@ -94,8 +99,8 @@ class BaseModel(Model):
 
 def create_add_to_models_meta_class(model_list: List[BaseModel]) -> type:
     class AddToModels(ModelBase):
-        def __new__(mcs, name, bases, attrs) -> Any:
-            new_cls = super().__new__(mcs, name, bases, attrs)
+        def __new__(cls, name, bases, attrs) -> Any:
+            new_cls = super().__new__(cls, name, bases, attrs)
             if attrs.get('skip_from_models_list') is not True:
                 model_list.append(new_cls)
             return new_cls
@@ -129,6 +134,7 @@ class TwitterDataModel(BaseModel):
     scraped_at = DateTimeField(default=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
     class Meta:
+        # pylint:disable=too-few-public-methods
         database = mysql_db
         table_name = 'elon_musk'
 
@@ -155,6 +161,7 @@ class RedditDataModel(BaseModel):
     title = CharField()
 
     class Meta:
+        # pylint:disable=too-few-public-methods
         database = mysql_db
         table_name = 'wallstreetbets'
 
@@ -173,9 +180,11 @@ class RedditOfficialApiModel(BaseModel):
     subreddit = CharField()
     subreddit_id = IntegerField()
     url = CharField()
+
     # upvote = IntegerField()
     # upvote_ratio = IntegerField()
 
     class Meta:
+        # pylint:disable=too-few-public-methods
         database = mysql_db
         table_name = 'wallstreetbets_official_api'
