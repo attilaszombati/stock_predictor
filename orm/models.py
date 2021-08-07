@@ -29,6 +29,11 @@ class BaseModel(Model):
     def table_name(cls) -> str:
         return cls._meta.table_name
 
+    @classmethod
+    def set_table_name(cls, table_name):
+        cls._meta.table_name = table_name
+        return cls
+
     # pylint: disable=no-member
     @classmethod
     def bulk_create_mysql(cls, model_list, batch_size=1000):
