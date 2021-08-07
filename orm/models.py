@@ -97,15 +97,12 @@ class BaseModel(Model):
         return True
 
 
-def create_add_to_models_meta_class(model_list: List[BaseModel], table_name) -> type:
+def create_add_to_models_meta_class(model_list: List[BaseModel]) -> type:
     class AddToModels(ModelBase):
         def __new__(cls, name, bases, attrs) -> Any:
             new_cls = super().__new__(cls, name, bases, attrs)
             if attrs.get('skip_from_models_list') is not True:
                 model_list.append(new_cls)
-            meta = attrs.pop('Meta', None)
-            if meta is not None:
-                meta.table_name = table_name
             return new_cls
 
     return AddToModels
@@ -113,10 +110,10 @@ def create_add_to_models_meta_class(model_list: List[BaseModel], table_name) -> 
 
 # pylint:disable=line-too-long
 upgrade_model_list: List['TwitterBaseModel'] = []
-AddToTwitterDataModelElonMusk = create_add_to_models_meta_class(upgrade_model_list, table_name='elon_musk')
-AddToTwitterDataModelJeffBezos = create_add_to_models_meta_class(upgrade_model_list, table_name='jeff_bezos')
-AddToTwitterDataModelBarackObama = create_add_to_models_meta_class(upgrade_model_list, table_name='barack_obama')
-AddToTwitterDataModelJoeBiden = create_add_to_models_meta_class(upgrade_model_list, table_name='joe_biden')
+AddToTwitterDataModelElonMusk = create_add_to_models_meta_class(upgrade_model_list)
+AddToTwitterDataModelJeffBezos = create_add_to_models_meta_class(upgrade_model_list)
+AddToTwitterDataModelBarackObama = create_add_to_models_meta_class(upgrade_model_list)
+AddToTwitterDataModelJoeBiden = create_add_to_models_meta_class(upgrade_model_list)
 
 
 class TwitterBaseModel(BaseModel):
@@ -170,19 +167,27 @@ class TwitterBaseModel(BaseModel):
 
 
 class TwitterDataModelElonMusk(TwitterBaseModel, metaclass=AddToTwitterDataModelElonMusk):
-    pass
+    # pylint: disable=too-few-public-methods
+    class Meta:
+        table_name = 'elon_musk'
 
 
 class TwitterDataModelJeffBezos(TwitterBaseModel, metaclass=AddToTwitterDataModelJeffBezos):
-    pass
+    # pylint: disable=too-few-public-methods
+    class Meta:
+        table_name = 'jeff_bezos'
 
 
 class TwitterDataModelBarackObama(TwitterBaseModel, metaclass=AddToTwitterDataModelBarackObama):
-    pass
+    # pylint: disable=too-few-public-methods
+    class Meta:
+        table_name = 'barack_obama'
 
 
 class TwitterDataModelJoeBiden(TwitterBaseModel, metaclass=AddToTwitterDataModelJoeBiden):
-    pass
+    # pylint: disable=too-few-public-methods
+    class Meta:
+        table_name = 'joe_biden'
 
 
 class RedditDataModel(BaseModel):
