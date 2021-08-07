@@ -6,11 +6,16 @@ import snscrape.modules.twitter as sntwitter
 from playhouse.shortcuts import model_to_dict
 
 # Using TwitterSearchScraper to scrape data and append tweets to list
-from orm.models import TwitterDataModelElonMusk, TwitterDataModelJeffBezos
+from orm.models import (
+    TwitterDataModelElonMusk,
+    TwitterDataModelJeffBezos,
+    TwitterDataModelBarackObama
+)
 
 tables = {
     'elonmusk': TwitterDataModelElonMusk,
-    'JeffBezos': TwitterDataModelJeffBezos
+    'JeffBezos': TwitterDataModelJeffBezos,
+    'BarackObama': TwitterDataModelBarackObama,
 }
 
 def scraping_data(user: str = 'elonmusk'):
