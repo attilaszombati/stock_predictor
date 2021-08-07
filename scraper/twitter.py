@@ -37,7 +37,7 @@ def scraping_data(scraping_type: str = 'since', user: str = 'elonmusk'):
         since_time = 'since_time:964381815'
 
     if scraping_type == 'since' and int(time.time()) - 86400 > int(since_time[:-2]):
-        query = f'from:{user} {since_time[:-2]} until_time:{int(since_time[:-2]) - 86400}'
+        query = f'from:{user} {since_time[:-2]} until_time:{int(time.time()) - 86400}'
     else:
         raise SystemExit('Need to wait more time! At least 1 day after the last tweet')
     print(f'The search query is : {query}')
