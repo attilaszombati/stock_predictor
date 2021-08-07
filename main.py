@@ -1,13 +1,13 @@
 # pylint:disable=missing-function-docstring, missing-module-docstring
 import json
 
-from orm.models import TwitterDataModel
+from orm.models import TwitterDataModelElonMusk, TwitterDataModelJeffBezos
 from scraper.context import get_mysql_db, get_secrets, init_database
 from scraper.twitter import apply_all_fixture
 
 tables = {
-    'elonmusk': 'elon_musk',
-    'JeffBezos': 'jeff_besos'
+    'elonmusk': TwitterDataModelElonMusk,
+    'JeffBezos': TwitterDataModelJeffBezos
 }
 
 def handler(request):
@@ -22,7 +22,6 @@ def handler(request):
     payload = get_secrets()
     init_database(database=database, password=payload)
     mysql_db = get_mysql_db(password=payload, database=database)
-    TwitterDataModel.Meta.table_name = tables.get(user)
-    mysql_db.create_tables([TwitterDataModel])
+    mysql_db.create_tables([tables.get(user)])
     apply_all_fixture(user)
     return {'done': 1}

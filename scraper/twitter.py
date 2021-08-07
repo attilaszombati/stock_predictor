@@ -6,10 +6,15 @@ import snscrape.modules.twitter as sntwitter
 from playhouse.shortcuts import model_to_dict
 
 # Using TwitterSearchScraper to scrape data and append tweets to list
-from orm.models import TwitterDataModel
+from orm.models import TwitterDataModelElonMusk, TwitterDataModelJeffBezos
+
+tables = {
+    'elonmusk': TwitterDataModelElonMusk,
+    'JeffBezos': TwitterDataModelJeffBezos
+}
 
 def scraping_data(user: str = 'elonmusk'):
-    last_scraped = TwitterDataModel.get_latest_elem_from_table()
+    last_scraped = tables.get(user).get_latest_elem_from_table()
     if last_scraped:
         last_record_time = datetime.strptime(str(last_scraped.created_at), "%Y-%m-%d %H:%M:%S")
         since_time = f'since_time:{last_record_time.timestamp()}'
@@ -37,7 +42,7 @@ def scraping_data_from_hashtag():
 
 def create_models_from_scraping(user):
     yield from (
-        TwitterDataModel(
+        tables.get(user)(
             cashtags=data.cashtags,
             content=data.content,
             conversation_id=data.conversationId,
