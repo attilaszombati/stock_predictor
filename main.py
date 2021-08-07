@@ -4,7 +4,8 @@ import json
 from orm.models import (
     TwitterDataModelElonMusk,
     TwitterDataModelJeffBezos,
-    TwitterDataModelBarackObama
+    TwitterDataModelBarackObama,
+    TwitterDataModelJoeBiden
 )
 from scraper.context import get_mysql_db, get_secrets, init_database
 from scraper.twitter import apply_all_fixture
@@ -13,6 +14,7 @@ tables = {
     'elonmusk': TwitterDataModelElonMusk,
     'JeffBezos': TwitterDataModelJeffBezos,
     'BarackObama': TwitterDataModelBarackObama,
+    'JoeBiden': TwitterDataModelJoeBiden,
 }
 
 

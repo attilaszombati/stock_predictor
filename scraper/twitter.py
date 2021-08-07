@@ -9,20 +9,22 @@ from playhouse.shortcuts import model_to_dict
 from orm.models import (
     TwitterDataModelElonMusk,
     TwitterDataModelJeffBezos,
-    TwitterDataModelBarackObama
+    TwitterDataModelBarackObama,
+    TwitterDataModelJoeBiden,
 )
 
-tables = {
+tables_names = {
     'elonmusk': TwitterDataModelElonMusk,
     'JeffBezos': TwitterDataModelJeffBezos,
     'BarackObama': TwitterDataModelBarackObama,
+    'JoeBiden': TwitterDataModelJoeBiden
 }
 
 def scraping_data(scraping_type: str = 'since', user: str = 'elonmusk'):
     if scraping_type == 'since':
-        last_scraped = tables.get(user).get_latest_elem_from_table()
+        last_scraped = tables_names.get(user).get_latest_elem_from_table()
     else:
-        last_scraped = tables.get(user).get_oldest_elem_from_table()
+        last_scraped = tables_names.get(user).get_oldest_elem_from_table()
     if last_scraped:
         last_record_time = datetime.strptime(str(last_scraped.created_at), "%Y-%m-%d %H:%M:%S")
         since_time = f'{scraping_type}_time:{last_record_time.timestamp()}'
@@ -50,7 +52,7 @@ def scraping_data_from_hashtag():
 
 def create_models_from_scraping(scraping_type, user):
     yield from (
-        tables.get(user)(
+        tables_names.get(user)(
             cashtags=data.cashtags,
             content=data.content,
             conversation_id=data.conversationId,

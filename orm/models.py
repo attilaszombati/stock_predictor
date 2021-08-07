@@ -259,6 +259,56 @@ class TwitterDataModelBarackObama(BaseModel):
             print(f'The oldest tweet has been created at: {last_elem.created_at}')
             return last_elem
 
+class TwitterDataModelJoeBiden(BaseModel):
+    cashtags = CharField(null=True)
+    content = CharField()
+    conversation_id = IntegerField()
+    coordinates = IntegerField(null=True)
+    created_at = DateTimeField()
+    hastags = CharField(null=True)
+    in_reply_to_tweet_id = IntegerField(null=True)
+    in_reply_to_user = CharField(null=True)
+    language = CharField()
+    like_count = IntegerField(null=True)
+    mentioned_users = CharField
+    outlinks = CharField(null=True)
+    place = CharField(null=True)
+    quote_count = IntegerField()
+    quoted_tweet = BooleanField(null=True)
+    reply_count = IntegerField(null=True)
+    retweet_count = IntegerField(null=True)
+    retweeted_tweet = BooleanField(null=True)
+    source = CharField()
+    source_url = CharField()
+    url = CharField()
+    user_name = CharField()
+    scraped_at = DateTimeField(default=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+
+    class Meta:
+        # pylint:disable=too-few-public-methods
+        database = mysql_db
+        table_name = 'joe_biden'
+
+    @classmethod
+    def get_latest_elem_from_table(cls):
+        try:
+            last_elem = cls.select(cls).order_by(cls.created_at.desc()).get()
+        except DoesNotExist:
+            return None
+        else:
+            print(f'The latest tweet has been created at: {last_elem.created_at}')
+            return last_elem
+
+    @classmethod
+    def get_oldest_elem_from_table(cls):
+        try:
+            last_elem = cls.select(cls).order_by(cls.created_at.asc()).get()
+        except DoesNotExist:
+            return None
+        else:
+            print(f'The oldest tweet has been created at: {last_elem.created_at}')
+            return last_elem
+
 
 class RedditDataModel(BaseModel):
     author = CharField(null=True)
