@@ -183,6 +183,12 @@ class TwitterDataModelJoeBiden(TwitterBaseModel):
         table_name = 'joe_biden'
 
 
+class TwitterDataModelKamalaHarris(TwitterBaseModel):
+    # pylint: disable=too-few-public-methods
+    class Meta:
+        table_name = 'kamala_harris'
+
+
 class RedditDataModel(BaseModel):
     author = CharField(null=True)
     created_at = DateTimeField(primary_key=True)
