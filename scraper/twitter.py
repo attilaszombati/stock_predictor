@@ -8,13 +8,7 @@ from playhouse.shortcuts import model_to_dict
 # Using TwitterSearchScraper to scrape data and append tweets to list
 from orm.models import TwitterDataModel
 
-tables = {
-    'elonmusk': 'elon_musk',
-    'JeffBezos': 'jeff_besos'
-}
-
 def scraping_data(user: str = 'elonmusk'):
-    TwitterDataModel.set_table_name(tables.get(user))
     last_scraped = TwitterDataModel.get_latest_elem_from_table()
     if last_scraped:
         last_record_time = datetime.strptime(str(last_scraped.created_at), "%Y-%m-%d %H:%M:%S")

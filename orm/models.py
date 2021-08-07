@@ -139,10 +139,6 @@ class TwitterDataModel(BaseModel):
         table_name = ''
 
     @classmethod
-    def set_table_name(cls, table_name):
-        cls.Meta.table_name = table_name
-
-    @classmethod
     def get_latest_elem_from_table(cls):
         try:
             last_elem = cls.select(cls).order_by(cls.created_at.desc()).get()
