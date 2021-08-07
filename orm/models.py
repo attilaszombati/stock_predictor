@@ -29,11 +29,6 @@ class BaseModel(Model):
     def table_name(cls) -> str:
         return cls._meta.table_name
 
-    @classmethod
-    def set_table_name(cls, table_name):
-        cls._meta.table_name = table_name
-        return cls
-
     # pylint: disable=no-member
     @classmethod
     def bulk_create_mysql(cls, model_list, batch_size=1000):
@@ -141,7 +136,11 @@ class TwitterDataModel(BaseModel):
     class Meta:
         # pylint:disable=too-few-public-methods
         database = mysql_db
-        table_name = 'elon_musk'
+        table_name = ''
+
+    @classmethod
+    def set_table_name(cls, table_name):
+        cls.Meta.table_name = table_name
 
     @classmethod
     def get_latest_elem_from_table(cls):
