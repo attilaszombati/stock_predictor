@@ -97,18 +97,29 @@ class BaseModel(Model):
         return True
 
 
-def create_add_to_models_meta_class(model_list: List[BaseModel]) -> type:
+def create_add_to_models_meta_class(model_list: List[BaseModel], table_name) -> type:
     class AddToModels(ModelBase):
         def __new__(cls, name, bases, attrs) -> Any:
             new_cls = super().__new__(cls, name, bases, attrs)
             if attrs.get('skip_from_models_list') is not True:
                 model_list.append(new_cls)
+            meta = attrs.pop('Meta', None)
+            if meta is not None:
+                meta.table_name = table_name
             return new_cls
 
     return AddToModels
 
 
-class TwitterDataModelElonMusk(BaseModel):
+# pylint:disable=line-too-long
+upgrade_model_list: List['TwitterBaseModel'] = []
+AddToTwitterDataModelElonMusk = create_add_to_models_meta_class(upgrade_model_list, table_name='elon_musk')
+AddToTwitterDataModelJeffBezos = create_add_to_models_meta_class(upgrade_model_list, table_name='jeff_bezos')
+AddToTwitterDataModelBarackObama = create_add_to_models_meta_class(upgrade_model_list, table_name='barack_obama')
+AddToTwitterDataModelJoeBiden = create_add_to_models_meta_class(upgrade_model_list, table_name='joe_biden')
+
+
+class TwitterBaseModel(BaseModel):
     cashtags = CharField(null=True)
     content = CharField()
     conversation_id = IntegerField()
@@ -136,7 +147,6 @@ class TwitterDataModelElonMusk(BaseModel):
     class Meta:
         # pylint:disable=too-few-public-methods
         database = mysql_db
-        table_name = 'elon_musk'
 
     @classmethod
     def get_latest_elem_from_table(cls):
@@ -159,155 +169,20 @@ class TwitterDataModelElonMusk(BaseModel):
             return last_elem
 
 
-class TwitterDataModelJeffBezos(BaseModel):
-    cashtags = CharField(null=True)
-    content = CharField()
-    conversation_id = IntegerField()
-    coordinates = IntegerField(null=True)
-    created_at = DateTimeField()
-    hastags = CharField(null=True)
-    in_reply_to_tweet_id = IntegerField(null=True)
-    in_reply_to_user = CharField(null=True)
-    language = CharField()
-    like_count = IntegerField(null=True)
-    mentioned_users = CharField
-    outlinks = CharField(null=True)
-    place = CharField(null=True)
-    quote_count = IntegerField()
-    quoted_tweet = BooleanField(null=True)
-    reply_count = IntegerField(null=True)
-    retweet_count = IntegerField(null=True)
-    retweeted_tweet = BooleanField(null=True)
-    source = CharField()
-    source_url = CharField()
-    url = CharField()
-    user_name = CharField()
-    scraped_at = DateTimeField(default=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+class TwitterDataModelElonMusk(TwitterBaseModel, metaclass=AddToTwitterDataModelElonMusk):
+    pass
 
-    class Meta:
-        # pylint:disable=too-few-public-methods
-        database = mysql_db
-        table_name = 'jeff_bezos'
 
-    @classmethod
-    def get_latest_elem_from_table(cls):
-        try:
-            last_elem = cls.select(cls).order_by(cls.created_at.desc()).get()
-        except DoesNotExist:
-            return None
-        else:
-            print(f'The latest tweet has been created at: {last_elem.created_at}')
-            return last_elem
+class TwitterDataModelJeffBezos(TwitterBaseModel, metaclass=AddToTwitterDataModelJeffBezos):
+    pass
 
-    @classmethod
-    def get_oldest_elem_from_table(cls):
-        try:
-            last_elem = cls.select(cls).order_by(cls.created_at.asc()).get()
-        except DoesNotExist:
-            return None
-        else:
-            print(f'The oldest tweet has been created at: {last_elem.created_at}')
-            return last_elem
 
-class TwitterDataModelBarackObama(BaseModel):
-    cashtags = CharField(null=True)
-    content = CharField()
-    conversation_id = IntegerField()
-    coordinates = IntegerField(null=True)
-    created_at = DateTimeField()
-    hastags = CharField(null=True)
-    in_reply_to_tweet_id = IntegerField(null=True)
-    in_reply_to_user = CharField(null=True)
-    language = CharField()
-    like_count = IntegerField(null=True)
-    mentioned_users = CharField
-    outlinks = CharField(null=True)
-    place = CharField(null=True)
-    quote_count = IntegerField()
-    quoted_tweet = BooleanField(null=True)
-    reply_count = IntegerField(null=True)
-    retweet_count = IntegerField(null=True)
-    retweeted_tweet = BooleanField(null=True)
-    source = CharField()
-    source_url = CharField()
-    url = CharField()
-    user_name = CharField()
-    scraped_at = DateTimeField(default=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+class TwitterDataModelBarackObama(TwitterBaseModel, metaclass=AddToTwitterDataModelBarackObama):
+    pass
 
-    class Meta:
-        # pylint:disable=too-few-public-methods
-        database = mysql_db
-        table_name = 'barack_obama'
 
-    @classmethod
-    def get_latest_elem_from_table(cls):
-        try:
-            last_elem = cls.select(cls).order_by(cls.created_at.desc()).get()
-        except DoesNotExist:
-            return None
-        else:
-            print(f'The latest tweet has been created at: {last_elem.created_at}')
-            return last_elem
-
-    @classmethod
-    def get_oldest_elem_from_table(cls):
-        try:
-            last_elem = cls.select(cls).order_by(cls.created_at.asc()).get()
-        except DoesNotExist:
-            return None
-        else:
-            print(f'The oldest tweet has been created at: {last_elem.created_at}')
-            return last_elem
-
-class TwitterDataModelJoeBiden(BaseModel):
-    cashtags = CharField(null=True)
-    content = CharField()
-    conversation_id = IntegerField()
-    coordinates = IntegerField(null=True)
-    created_at = DateTimeField()
-    hastags = CharField(null=True)
-    in_reply_to_tweet_id = IntegerField(null=True)
-    in_reply_to_user = CharField(null=True)
-    language = CharField()
-    like_count = IntegerField(null=True)
-    mentioned_users = CharField
-    outlinks = CharField(null=True)
-    place = CharField(null=True)
-    quote_count = IntegerField()
-    quoted_tweet = BooleanField(null=True)
-    reply_count = IntegerField(null=True)
-    retweet_count = IntegerField(null=True)
-    retweeted_tweet = BooleanField(null=True)
-    source = CharField()
-    source_url = CharField()
-    url = CharField()
-    user_name = CharField()
-    scraped_at = DateTimeField(default=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-
-    class Meta:
-        # pylint:disable=too-few-public-methods
-        database = mysql_db
-        table_name = 'joe_biden'
-
-    @classmethod
-    def get_latest_elem_from_table(cls):
-        try:
-            last_elem = cls.select(cls).order_by(cls.created_at.desc()).get()
-        except DoesNotExist:
-            return None
-        else:
-            print(f'The latest tweet has been created at: {last_elem.created_at}')
-            return last_elem
-
-    @classmethod
-    def get_oldest_elem_from_table(cls):
-        try:
-            last_elem = cls.select(cls).order_by(cls.created_at.asc()).get()
-        except DoesNotExist:
-            return None
-        else:
-            print(f'The oldest tweet has been created at: {last_elem.created_at}')
-            return last_elem
+class TwitterDataModelJoeBiden(TwitterBaseModel, metaclass=AddToTwitterDataModelJoeBiden):
+    pass
 
 
 class RedditDataModel(BaseModel):
