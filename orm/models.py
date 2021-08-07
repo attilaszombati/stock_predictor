@@ -29,6 +29,26 @@ class BaseModel(Model):
     def table_name(cls) -> str:
         return cls._meta.table_name
 
+    @classmethod
+    def get_latest_elem_from_table(cls):
+        try:
+            last_elem = cls.select(cls).order_by(cls.created_at.desc()).get()
+        except DoesNotExist:
+            return None
+        else:
+            print(f'The latest tweet has been created at: {last_elem.created_at}')
+            return last_elem
+
+    @classmethod
+    def get_oldest_elem_from_table(cls):
+        try:
+            last_elem = cls.select(cls).order_by(cls.created_at.asc()).get()
+        except DoesNotExist:
+            return None
+        else:
+            print(f'The oldest tweet has been created at: {last_elem.created_at}')
+            return last_elem
+
     # pylint: disable=no-member
     @classmethod
     def bulk_create_mysql(cls, model_list, batch_size=1000):
@@ -138,25 +158,6 @@ class TwitterDataModelElonMusk(BaseModel):
         database = mysql_db
         table_name = 'elon_musk'
 
-    @classmethod
-    def get_latest_elem_from_table(cls):
-        try:
-            last_elem = cls.select(cls).order_by(cls.created_at.desc()).get()
-        except DoesNotExist:
-            return None
-        else:
-            print(f'The latest tweet has been created at: {last_elem.created_at}')
-            return last_elem
-
-    @classmethod
-    def get_oldest_elem_from_table(cls):
-        try:
-            last_elem = cls.select(cls).order_by(cls.created_at.asc()).get()
-        except DoesNotExist:
-            return None
-        else:
-            print(f'The oldest tweet has been created at: {last_elem.created_at}')
-            return last_elem
 
 class TwitterDataModelJeffBezos(BaseModel):
     cashtags = CharField(null=True)
