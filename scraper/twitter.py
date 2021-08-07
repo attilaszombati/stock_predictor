@@ -1,5 +1,6 @@
 # pylint:disable=missing-function-docstring, missing-module-docstring
 # pylint:disable=import-error
+import time
 from datetime import datetime
 
 import snscrape.modules.twitter as sntwitter
@@ -27,13 +28,18 @@ def scraping_data(scraping_type: str = 'since', user: str = 'elonmusk'):
         last_scraped = tables.get(user).get_latest_elem_from_table()
     else:
         last_scraped = tables.get(user).get_oldest_elem_from_table()
+
     if last_scraped:
         last_record_time = datetime.strptime(str(last_scraped.created_at), "%Y-%m-%d %H:%M:%S")
         since_time = f'{scraping_type}_time:{last_record_time.timestamp()}'
         print(f'The {scraping_type}_time variable is : {since_time}')
     else:
         since_time = 'since_time:964381815'
-    query = f'from:{user} {since_time[:-2]}'
+
+    if scraping_type == 'since' and int(time.time()) - 86400 > int(since_time[:-2]):
+        query = f'from:{user} {since_time[:-2]} until_time:{int(since_time[:-2]) - 86400}'
+    else:
+        raise SystemExit('Need to wait more time! At least 1 day after the last tweet')
     print(f'The search query is : {query}')
     max_item = sntwitter.TwitterSearchScraper(query).get_items()
     for tweet in max_item:
