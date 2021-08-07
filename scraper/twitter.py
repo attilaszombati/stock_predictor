@@ -36,7 +36,7 @@ def scraping_data_from_hashtag():
         yield tweet
 
 
-def create_models_from_scraping():
+def create_models_from_scraping(user):
     yield from (
         TwitterDataModel(
             cashtags=data.cashtags,
@@ -63,11 +63,11 @@ def create_models_from_scraping():
             # scraped_at=data.scraped_at,
             user_name=data.user.username,
         )
-        for data in scraping_data()
+        for data in scraping_data(user=user)
     )
 
 
-def apply_all_fixture():
-    for fixture in create_models_from_scraping():
+def apply_all_fixture(user):
+    for fixture in create_models_from_scraping(user=user):
         data = model_to_dict(fixture, recurse=False)
         fixture.insert(data).on_conflict(update=data).execute()

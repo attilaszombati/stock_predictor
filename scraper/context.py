@@ -12,12 +12,12 @@ def get_secrets():
     return payload
 
 
-def get_mysql_db(password):
+def get_mysql_db(password: str, database: str = 'twitter'):
     mysql_db = MySQLDatabase(
         user='root',
         password=password,
         unix_socket="/cloudsql/crawling-315317:europe-west1:mysql-03",
-        database='twitter',
+        database=database,
     )
     return mysql_db
 

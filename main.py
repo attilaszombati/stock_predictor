@@ -5,13 +5,17 @@ from scraper.twitter import apply_all_fixture
 
 
 def handler(request):
-    print(request)
+    user = request.get('USER', '')
+    database = request.get('DATABASE', 'twitter')
+    print('X' * 50)
+    print(f'The user is : {user}, the database is : {database}')
+    print('X' * 50)
     payload = get_secrets()
 
-    init_database(password=payload)
+    init_database(database=database,password=payload)
 
-    mysql_db = get_mysql_db(password=payload)
+    mysql_db = get_mysql_db(password=payload, database=database)
 
     mysql_db.create_tables([TwitterDataModel])
-    apply_all_fixture()
+    apply_all_fixture(user)
     return {'done': 1}
