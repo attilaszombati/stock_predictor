@@ -7,8 +7,8 @@ from scraper.twitter import apply_all_fixture
 
 
 def handler(request):
-    print(request)
     request = json.loads(request.POST)
+    print(request)
     user = request.get('USER', '')
     database = request.get('DATABASE', 'twitter')
     print('X' * 50)
