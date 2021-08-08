@@ -39,8 +39,9 @@ def scraping_data(scraping_type: str = 'since', user: str = 'elonmusk'):
     else:
         since_time = 'since_time:964381815'
 
-    if scraping_type == 'since' and int(time.time()) - 86400 > int(last_record_time.timestamp()):
-        query = f'from:{user} {since_time[:-2]} until_time:{int(time.time()) - 86400}'
+    if scraping_type == 'since' and \
+            int(time.time()) - (86400 * 3) > int(last_record_time.timestamp()):
+        query = f'from:{user} {since_time[:-2]} until_time:{int(time.time()) - (86400 * 3)}'
         print(f'The search query is : {query}')
         max_item = sntwitter.TwitterSearchScraper(query).get_items()
         for tweet in max_item:
