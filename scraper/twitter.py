@@ -1,6 +1,7 @@
 # pylint:disable=missing-function-docstring, missing-module-docstring
 # pylint:disable=import-error
 import logging
+import time
 from datetime import datetime
 
 import snscrape.modules.twitter as sntwitter
@@ -25,26 +26,45 @@ tables = {
 
 logger = logging.getLogger(__name__)
 
-def scraping_data(scraping_type: str = 'since', user: str = 'elonmusk'):
-    if scraping_type == 'since':
-        last_scraped = tables.get(user).get_latest_elem_from_table()
-    else:
-        last_scraped = tables.get(user).get_oldest_elem_from_table()
+def scraping_data_history(user: str = 'elonmusk'):
+    last_scraped = tables.get(user).get_oldest_elem_from_table()
 
     if last_scraped:
         last_record_time = datetime.strptime(str(last_scraped.created_at), "%Y-%m-%d %H:%M:%S")
-        since_time = f'{scraping_type}_time:{last_record_time.timestamp()}'
-        print(f'The {scraping_type}_time variable is : {since_time}')
+        scraper_time = f'until_time:{last_record_time.timestamp()}'
+        print(f'The until_time variable is : {scraper_time}')
     else:
-        since_time = 'since_time:964381815'
+        scraper_time = 'since_time:964381815'
 
-    query = f'from:{user} {since_time[:-2]}'
+    query = f'from:{user} {scraper_time[:-2]}'
     print(f'The search query is : {query}')
     max_item = sntwitter.TwitterSearchScraper(query).get_items()
     for tweet in max_item:
         yield tweet
     print('X' * 50)
-    print('End of scraping')
+    print('End of history scraping')
+    print('X' * 50)
+
+
+def scraping_data_news(user: str = 'elonmusk'):
+    last_scraped = tables.get(user).get_latest_elem_from_table()
+    if last_scraped:
+        last_record_time = datetime.strptime(str(last_scraped.created_at), "%Y-%m-%d %H:%M:%S")
+        scraper_time = f'since_time:{last_record_time.timestamp()}'
+        print(f'The since_time variable is : {scraper_time}')
+    else:
+        scraper_time = 'since_time:964381815'
+
+    query = f'from:{user} {int(scraper_time[:-2]) + 1} until_time:{int(time.time() - (86400 * 3))}'
+    print(f'The search query is : {query}')
+    max_item = sntwitter.TwitterSearchScraper(query).get_items()
+    for tweet in max_item:
+        if tweet:
+            yield tweet
+        else:
+            logger.warning('Need to wait more time! At least 3 day after the last tweet')
+    print('X' * 50)
+    print('End of new feeds scraping')
     print('X' * 50)
 
 
@@ -58,6 +78,11 @@ def scraping_data_from_hashtag():
 
 
 def create_models_from_scraping(scraping_type, user):
+    if scraping_type == 'since':
+        scraping_batch = scraping_data_news(user=user)
+    else:
+        scraping_batch = scraping_data_history(user=user)
+
     yield from (
         tables.get(user)(
             cashtags=data.cashtags,
@@ -84,7 +109,7 @@ def create_models_from_scraping(scraping_type, user):
             # scraped_at=data.scraped_at,
             user_name=data.user.username,
         )
-        for data in scraping_data(scraping_type=scraping_type, user=user)
+        for data in scraping_batch
     )
 
 
