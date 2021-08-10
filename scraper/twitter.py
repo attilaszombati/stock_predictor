@@ -50,12 +50,14 @@ def scraping_data_news(user: str = 'elonmusk'):
     last_scraped = tables.get(user).get_latest_elem_from_table()
     if last_scraped:
         last_record_time = datetime.strptime(str(last_scraped.created_at), "%Y-%m-%d %H:%M:%S")
-        scraper_time = f'since_time:{last_record_time.timestamp()}'
+        scraper_time = int(last_record_time.timestamp()) + 1
         print(f'The since_time variable is : {scraper_time}')
     else:
-        scraper_time = 'since_time:964381815'
+        scraper_time = 964381815
 
-    query = f'from:{user} {int(scraper_time[:-2]) + 1} until_time:{int(time.time() - (86400 * 3))}'
+    since_time = f'since_time:{scraper_time}'
+    until_time = int(time.time() - (86400 * 3))
+    query = f'from:{user} {since_time} until_time:{until_time}'
     print(f'The search query is : {query}')
     max_item = sntwitter.TwitterSearchScraper(query).get_items()
     for tweet in max_item:
