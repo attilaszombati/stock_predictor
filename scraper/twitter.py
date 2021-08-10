@@ -1,7 +1,6 @@
 # pylint:disable=missing-function-docstring, missing-module-docstring
 # pylint:disable=import-error
 import logging
-import time
 from datetime import datetime
 
 import snscrape.modules.twitter as sntwitter
