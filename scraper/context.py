@@ -1,7 +1,10 @@
 # pylint:disable=missing-module-docstring, no-name-in-module, import-error, missing-function-docstring
-import pymysql
 from google.cloud import secretmanager
 from peewee import MySQLDatabase
+from sqlalchemy import create_engine
+from sqlalchemy_utils import database_exists, create_database
+
+from orm.models import TwitterBaseModel
 
 
 def get_secrets():
@@ -22,13 +25,15 @@ def get_mysql_db(password: str, database: str = 'twitter'):
     return mysql_db
 
 
-def init_database(password: str, database: str = 'twitter'):
-    conn = pymysql.connect(
-        unix_socket="/cloudsql/crawling-315317:europe-west1:mysql-03",
-        user='root',
-        password=password,
+def init_database(
+        user: str = 'postgres',
+        password: str = 'postgres',
+        container_name: str = 'localhost',
+        database: str = 'twitter'
+):
+    engine = create_engine(
+        f'postgresql+psycopg2://{user}:{password}@{container_name}:5432/{database}', echo=True
     )
-
-    sql = f'CREATE DATABASE IF NOT EXISTS {database}'
-    conn.cursor().execute(sql)
-    conn.close()
+    if not database_exists(engine.url):
+        create_database(engine.url)
+    TwitterBaseModel.metadata.create_all(engine)

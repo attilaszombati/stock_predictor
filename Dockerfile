@@ -15,4 +15,4 @@ COPY tests tasts
 ENV PATH=/root/.local/bin:$PATH
 ENV PYTHONPATH=$PYTHONPATH:/orm
 
-CMD ["python3", "./orm/fixtures/twitter.py"]
+CMD ["python3", "./scraper/twitter.py"]
