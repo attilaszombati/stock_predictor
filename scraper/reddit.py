@@ -2,6 +2,7 @@
 import snscrape.modules.reddit as snreddit
 
 from orm.models import RedditDataModel
+# Using RedditSubredditScraper to scrape data
 from scraper.context import init_database
 
 

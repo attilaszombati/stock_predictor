@@ -1,9 +1,8 @@
 services:
-  postgres:
-    image: postgres:12
-    container_name: postgres_local
+  mysql:
+    image: mysql:5.7
+    container_name: mysql
     ports:
-      - "5432:5432"
+      - 3306:3306
     environment:
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_USER: postgres
+      - MYSQL_ALLOW_EMPTY_PASSWORD=1
