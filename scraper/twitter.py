@@ -124,6 +124,6 @@ def apply_all_fixture(scraping_type, user):
 
 
 if __name__ == '__main__':
-    init_database_local(password='', database='twitter')
+    init_database_local(database='twitter')
     mysql_db.create_tables([TwitterDataModelKamalaHarris])
     apply_all_fixture(scraping_type='not since', user='KamalaHarris')
