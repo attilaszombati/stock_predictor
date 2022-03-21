@@ -16,9 +16,9 @@ from peewee import (
 )
 from playhouse.shortcuts import model_to_dict
 
-from scraper.context import get_mysql_db, get_secrets
+from scraper.context import get_mysql_db_local
 
-mysql_db = get_mysql_db(get_secrets())
+mysql_db = get_mysql_db_local()
 
 logger = logging.getLogger(__name__)
 
@@ -114,8 +114,8 @@ class TwitterBaseModel(BaseModel):
     content = CharField()
     conversation_id = IntegerField()
     coordinates = CharField(null=True)
-    created_at = DateTimeField()
-    hastags = CharField(null=True)
+    tweeted_at = DateTimeField()
+    hashtags = CharField(null=True)
     in_reply_to_tweet_id = IntegerField(null=True)
     in_reply_to_user = CharField(null=True)
     language = CharField()
@@ -132,7 +132,7 @@ class TwitterBaseModel(BaseModel):
     source_url = CharField()
     url = CharField()
     user_name = CharField()
-    scraped_at = DateTimeField(default=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    created_at = DateTimeField(default=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
     class Meta:
         # pylint:disable=too-few-public-methods

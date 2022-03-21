@@ -22,11 +22,32 @@ def get_mysql_db(password: str, database: str = 'twitter'):
     return mysql_db
 
 
+def get_mysql_db_local(password='', database: str = 'twitter'):
+    mysql_db = MySQLDatabase(
+        user='root',
+        password=password,
+        database=database,
+    )
+    return mysql_db
+
+
 def init_database(password: str, database: str = 'twitter'):
     conn = pymysql.connect(
         unix_socket="/cloudsql/crawling-315317:europe-west1:mysql-03",
         user='root',
         password=password,
+    )
+
+    sql = f'CREATE DATABASE IF NOT EXISTS {database}'
+    conn.cursor().execute(sql)
+    conn.close()
+
+
+def init_database_local(database: str = 'twitter'):
+    conn = pymysql.connect(
+        host='localhost',
+        user='root',
+        port=3306
     )
 
     sql = f'CREATE DATABASE IF NOT EXISTS {database}'

@@ -1,6 +1,6 @@
 peewee==3.14.4
-pandas~=1.2.4
-git+https://github.com/JustAnotherArchivist/snscrape.git
+pandas==1.4.1
+snscrape
 pytest==6.2.4
 PyMySQL==1.0.2
 google-cloud-secret-manager

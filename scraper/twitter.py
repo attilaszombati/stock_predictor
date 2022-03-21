@@ -13,8 +13,9 @@ from orm.models import (
     TwitterDataModelJeffBezos,
     TwitterDataModelBarackObama,
     TwitterDataModelJoeBiden,
-    TwitterDataModelKamalaHarris
+    TwitterDataModelKamalaHarris, mysql_db
 )
+from scraper.context import init_database_local
 
 tables = {
     'elonmusk': TwitterDataModelElonMusk,
@@ -25,6 +26,7 @@ tables = {
 }
 
 logger = logging.getLogger(__name__)
+
 
 def scraping_data_history(user: str = 'elonmusk'):
     last_scraped = tables.get(user).get_oldest_elem_from_table()
@@ -91,8 +93,8 @@ def create_models_from_scraping(scraping_type, user):
             content=data.content,
             conversation_id=data.conversationId,
             coordinates=data.coordinates,
-            created_at=data.date,
-            hastags=data.hashtags,
+            tweeted_at=data.date,
+            hashtags=data.hashtags,
             in_reply_to_tweet_id=data.inReplyToTweetId,
             in_reply_to_user=data.inReplyToUser,
             language=data.lang,
@@ -119,3 +121,9 @@ def apply_all_fixture(scraping_type, user):
     for fixture in create_models_from_scraping(scraping_type=scraping_type, user=user):
         data = model_to_dict(fixture, recurse=False)
         fixture.insert(data).on_conflict(update=data).execute()
+
+
+if __name__ == '__main__':
+    init_database_local(password='', database='twitter')
+    mysql_db.create_tables([TwitterDataModelKamalaHarris])
+    apply_all_fixture(scraping_type='not since', user='KamalaHarris')
