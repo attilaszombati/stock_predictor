@@ -1,6 +1,0 @@
-module_paths:
-  - scraper
-  - orm
-  - tests
-  - main
-exclude_modules: []

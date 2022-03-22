@@ -2,7 +2,7 @@
 import json
 
 from scraper.context import get_mysql_db, get_secrets, init_database
-from scraper.twitter import apply_all_fixture, tables
+from scraper.twitter import apply_all_fixture, user_models
 
 
 def handler(request):
@@ -19,7 +19,7 @@ def handler(request):
     init_database(database=database, password=payload)
     mysql_db = get_mysql_db(password=payload, database=database)
     for user in users:
-        table = tables.get(user)
+        table = user_models.get(user)
         mysql_db.create_tables([table])
-        apply_all_fixture(scraping_type=scraping_type, user=user)
+        apply_all_fixture(scraping_type=scraping_type, twitter_user=user)
     return {'done': 1}
