@@ -46,7 +46,7 @@ class TwitterScraper(TwitterScraperConfig):
         self.scraping_type = scraping_type
 
     def validate_user_model(self):
-        if self.user not in user_models.keys():
+        if self.user not in user_models:
             raise UserModelNotFound(self.user)
 
     @property

@@ -1,4 +1,4 @@
-# pylint:disable=missing-module-docstring, no-name-in-module, import-error, missing-function-docstring
+# pylint:disable=no-name-in-module
 import pymysql
 from google.cloud import secretmanager
 from peewee import MySQLDatabase

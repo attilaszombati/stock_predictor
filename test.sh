@@ -2,5 +2,5 @@
 
 set -eux
 
-pylint orm scraper
+pylint scraper orm tests
 pytest -sv tests
