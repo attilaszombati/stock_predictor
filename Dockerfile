@@ -9,10 +9,10 @@ RUN pip install -r requirements.txt
 
 WORKDIR /srv
 
-COPY .pylintrc ./
+COPY .pylintrc test.sh ./
 COPY orm orm
 COPY scraper scraper
-COPY tests tasts
+COPY tests tests
 ENV PATH=/root/.local/bin:$PATH
 ENV PYTHONPATH=$PYTHONPATH:/srv
 
