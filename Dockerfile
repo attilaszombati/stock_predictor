@@ -14,6 +14,6 @@ COPY orm orm
 COPY scraper scraper
 COPY tests tasts
 ENV PATH=/root/.local/bin:$PATH
-ENV PYTHONPATH=$PYTHONPATH:/orm
+ENV PYTHONPATH=$PYTHONPATH:/srv
 
 CMD ["python3", "./orm/fixtures/twitter.py"]
