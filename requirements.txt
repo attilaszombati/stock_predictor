@@ -6,3 +6,4 @@ PyMySQL==1.0.2
 google-cloud-secret-manager
 praw==7.4.0
 lint==1.2.1
+psycopg2==2.9.3
