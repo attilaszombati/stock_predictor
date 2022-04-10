@@ -7,9 +7,9 @@ from praw import Reddit
 from orm.models import RedditOfficialApiModel, mysql_db
 
 reddit = Reddit(
-    client_id='YgNm5NHkXxrMwA',
-    client_secret='_OA_8yPNDDGufG9VSSxLx2mvPsPQFw',
-    user_agent='szates_96',
+    client_id='',
+    client_secret='',
+    user_agent='szates_96'
 )
 
 
