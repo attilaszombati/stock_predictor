@@ -11,8 +11,7 @@ from peewee import (
     CharField,
     IntegerField,
     DoesNotExist,
-    BooleanField,
-)
+    BooleanField, BigIntegerField, )
 from playhouse.shortcuts import model_to_dict
 
 from scraper.context import get_mysql_db_local
@@ -109,28 +108,29 @@ class BaseModel(Model):
 
 
 class TwitterBaseModel(BaseModel):
-    cashtags = CharField(null=True)
-    content = CharField()
-    conversation_id = IntegerField()
-    coordinates = CharField(null=True)
+    id = CharField(primary_key=True)
+    cashtags = CharField(null=True, max_length=1000)
+    content = CharField(max_length=1000)
+    conversation_id = BigIntegerField()
+    coordinates = CharField(null=True, max_length=1000)
     tweeted_at = DateTimeField()
-    hashtags = CharField(null=True)
-    in_reply_to_tweet_id = IntegerField(null=True)
-    in_reply_to_user = CharField(null=True)
-    language = CharField()
-    like_count = IntegerField(null=True)
-    mentioned_users = CharField
-    outlinks = CharField(null=True)
-    place = CharField(null=True)
-    quote_count = IntegerField()
+    hashtags = CharField(null=True, max_length=1000)
+    in_reply_to_tweet_id = BigIntegerField(null=True)
+    in_reply_to_user = CharField(null=True, max_length=1000)
+    language = CharField(max_length=1000)
+    like_count = BigIntegerField(null=True)
+    mentioned_users = CharField(null=True)
+    outlinks = CharField(null=True, max_length=1000)
+    place = CharField(null=True, max_length=1000)
+    quote_count = BigIntegerField()
     quoted_tweet = BooleanField(null=True)
-    reply_count = IntegerField(null=True)
-    retweet_count = IntegerField(null=True)
+    reply_count = BigIntegerField(null=True)
+    retweet_count = BigIntegerField(null=True)
     retweeted_tweet = BooleanField(null=True)
-    source = CharField()
-    source_url = CharField()
-    url = CharField()
-    user_name = CharField()
+    source = CharField(max_length=1000)
+    source_url = CharField(max_length=1000)
+    url = CharField(max_length=1000)
+    user_name = CharField(max_length=1000)
     created_at = DateTimeField(default=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
     class Meta:
@@ -140,21 +140,21 @@ class TwitterBaseModel(BaseModel):
     @classmethod
     def get_latest_elem_from_table(cls):
         try:
-            last_elem = cls.select(cls).order_by(cls.created_at.desc()).get()
+            last_elem = cls.select(cls).order_by(cls.tweeted_at.desc()).get()
         except DoesNotExist:
             return None
         else:
-            print(f'The latest tweet has been created at: {last_elem.created_at}')
+            print(f'The latest tweet has been created at: {last_elem.tweeted_at}')
             return last_elem
 
     @classmethod
     def get_oldest_elem_from_table(cls):
         try:
-            last_elem = cls.select(cls).order_by(cls.created_at.asc()).get()
+            last_elem = cls.select(cls).order_by(cls.tweeted_at.asc()).get()
         except DoesNotExist:
             return None
         else:
-            print(f'The oldest tweet has been created at: {last_elem.created_at}')
+            print(f'The oldest tweet has been created at: {last_elem.tweeted_at}')
             return last_elem
 
 
