@@ -1,21 +1,25 @@
-# pylint:disable=missing-function-docstring, missing-module-docstring
-# pylint:disable=import-error
+# pylint:disable=no-name-in-module
 import logging
 import time
 from datetime import datetime
 
+import pandas as pd
 import snscrape.modules.twitter as sntwitter
 from playhouse.shortcuts import model_to_dict
+from sqlalchemy import create_engine
 
+from scraper.context import connect_database
+from scraper.custom_exceptions import UserModelNotFound
 from orm.models import (
     TwitterDataModelElonMusk,
     TwitterDataModelJeffBezos,
     TwitterDataModelBarackObama,
     TwitterDataModelJoeBiden,
-    TwitterDataModelKamalaHarris, mysql_db
+    TwitterDataModelKamalaHarris,
+    postgres_db
 )
-from scraper.context import init_database_local
-from scraper.custom_exceptions import UserModelNotFound
+
+engine = create_engine('postgresql://postgres:postgres@localhost:5432/twitter')
 
 user_models = {
     'elonmusk': TwitterDataModelElonMusk,
@@ -56,7 +60,7 @@ class TwitterScraper(TwitterScraperConfig):
 
     def set_query_time_until_last_scraped(self):
         last_record_time = datetime.strptime(str(self.get_last_scraped_tweet.tweeted_at), "%Y-%m-%d %H:%M:%S")
-        logger.warning(f'Old tweets for the user: {self.user} '
+        logger.warning(f'Old tweets for the user : {self.user} '
                        f'will be scraped from: {last_record_time}')
         logger.info(f'The until_time variable is : {self.query_time}')
         self.query_time = f'until_time:{last_record_time.timestamp()}'
@@ -66,7 +70,7 @@ class TwitterScraper(TwitterScraperConfig):
         last_record_time = datetime.strptime(str(self.get_last_scraped_tweet.tweeted_at), "%Y-%m-%d %H:%M:%S")
         scraper_time = int(last_record_time.timestamp()) + 1
         self.query_time = f'since_time:{scraper_time}'
-        logger.info(f'New tweets for the user: {self.user} will be scraped from: {self.query_time}')
+        logger.info(f'New tweets for the user : {self.user} will be scraped from: {self.query_time}')
         logger.info(f'The until_time variable is : {self.query_time}')
         return self.query_time
 
@@ -157,8 +161,18 @@ def apply_all_fixture(scraping_type, twitter_user):
         data = model_to_dict(fixture, recurse=False)
         fixture.insert(data).execute()
 
+    return str(scraper.get_last_scraped_tweet.tweeted_at).replace(" ", "-")
+
 
 if __name__ == '__main__':
-    init_database_local(database='twitter')
-    mysql_db.create_tables([TwitterDataModelElonMusk])
-    apply_all_fixture(scraping_type='old', twitter_user='elonmusk')
+    connect_database(database='twitter')
+    postgres_db.create_tables([TwitterDataModelElonMusk])
+    last_tweeted_at = apply_all_fixture(scraping_type='old', twitter_user='elonmusk')
+    df = pd.read_sql(
+        """
+        select * from elon_musk
+        """,
+        engine
+    )
+
+    df.to_parquet(path=f'elon_musk_{last_tweeted_at}.pq', compression='snappy')

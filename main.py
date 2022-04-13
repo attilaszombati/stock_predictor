@@ -1,7 +1,8 @@
 # pylint:disable=missing-function-docstring, missing-module-docstring
 import json
 
-from scraper.context import get_mysql_db, get_secrets, init_database
+from utils.secret_manager import SecretManger
+from scraper.context import get_mysql_db, init_database
 from scraper.twitter import apply_all_fixture, user_models
 
 
@@ -15,7 +16,7 @@ def handler(request):
     users = request_json.get('USERS', '')
     database = request_json.get('DATABASE', 'twitter')
     scraping_type = request_json.get('SCRAPING_TYPE', 'since')
-    payload = get_secrets()
+    payload = SecretManger().get_secret(secret_name='', secret_version='')
     init_database(database=database, password=payload)
     mysql_db = get_mysql_db(password=payload, database=database)
     for user in users:

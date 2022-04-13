@@ -6,4 +6,7 @@ PyMySQL==1.0.2
 google-cloud-secret-manager
 praw==7.4.0
 lint==1.2.1
+fastparquet==0.7.2
+psycopg2-binary==2.9.3
 psycopg2==2.9.3
+SQLAlchemy==1.4.35

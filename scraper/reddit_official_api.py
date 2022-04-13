@@ -1,15 +1,16 @@
-# pylint:disable=import-error, missing-function-docstring, missing-module-docstring
+# pylint:disable=no-name-in-module
+import os
 import time
 from datetime import datetime
 
 from praw import Reddit
 
-from orm.models import RedditOfficialApiModel, mysql_db
+from orm.models import RedditOfficialApiModel, postgres_db
 
 reddit = Reddit(
-    client_id='',
-    client_secret='',
-    user_agent='szates_96'
+    client_id=os.getenv("REDDIT_CLIENT_ID", ""),
+    client_secret=os.getenv("REDDIT_CLIENT_SECRET", ""),
+    user_agent=os.getenv("REDDIT_USER_AGENT", "")
 )
 
 
@@ -61,5 +62,5 @@ def apply_all_fixture():
 
 
 if __name__ == '__main__':
-    mysql_db.create_tables([RedditOfficialApiModel])
+    postgres_db.create_tables([RedditOfficialApiModel])
     apply_all_fixture()

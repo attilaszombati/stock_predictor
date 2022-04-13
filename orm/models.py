@@ -1,22 +1,22 @@
+# pylint:disable=no-name-in-module
 import datetime
 import logging
 from typing import Any
 
 from peewee import (
     Model,
-    fn,
     IntegrityError,
     ModelBase,
     DateTimeField,
     CharField,
     IntegerField,
     DoesNotExist,
-    BooleanField, BigIntegerField, )
+    BooleanField, BigIntegerField, fn, )
 from playhouse.shortcuts import model_to_dict
 
-from scraper.context import get_mysql_db_local
+from scraper.context import get_postgres_db
 
-mysql_db = get_mysql_db_local()
+postgres_db = get_postgres_db()
 
 logger = logging.getLogger(__name__)
 
@@ -135,7 +135,7 @@ class TwitterBaseModel(BaseModel):
 
     class Meta:
         # pylint:disable=too-few-public-methods
-        database = mysql_db
+        database = postgres_db
 
     @classmethod
     def get_latest_elem_from_table(cls):
@@ -144,7 +144,7 @@ class TwitterBaseModel(BaseModel):
         except DoesNotExist:
             return None
         else:
-            print(f'The latest tweet has been created at: {last_elem.tweeted_at}')
+            print(f'The latest tweet has been tweeted at: {last_elem.tweeted_at}')
             return last_elem
 
     @classmethod
@@ -154,7 +154,7 @@ class TwitterBaseModel(BaseModel):
         except DoesNotExist:
             return None
         else:
-            print(f'The oldest tweet has been created at: {last_elem.tweeted_at}')
+            print(f'The oldest tweet has been tweeted at: {last_elem.tweeted_at}')
             return last_elem
 
 
@@ -201,7 +201,7 @@ class RedditDataModel(BaseModel):
 
     class Meta:
         # pylint:disable=too-few-public-methods
-        database = mysql_db
+        database = postgres_db
         table_name = 'wallstreetbets'
 
 
@@ -225,5 +225,5 @@ class RedditOfficialApiModel(BaseModel):
 
     class Meta:
         # pylint:disable=too-few-public-methods
-        database = mysql_db
+        database = postgres_db
         table_name = 'wallstreetbets_official_api'
