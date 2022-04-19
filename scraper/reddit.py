@@ -2,8 +2,6 @@
 import snscrape.modules.reddit as snreddit
 
 from orm.models import RedditDataModel
-# Using RedditSubredditScraper to scrape data
-from scraper.context import init_database
 
 
 def scraping_data():
@@ -35,7 +33,4 @@ def apply_all_fixture_from_reddit():
 
 
 if __name__ == '__main__':
-    init_database(password='', database='reddit')
-    # mysql_db# .create_tables([RedditDataModel])
     apply_all_fixture_from_reddit()
-    # scraping_data()

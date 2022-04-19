@@ -2,11 +2,8 @@
 import os
 from configparser import ConfigParser
 
-import psycopg2
-import pymysql
 import sqlalchemy
 from peewee import PostgresqlDatabase
-from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from sqlalchemy_utils import database_exists, create_database
 
 
@@ -41,44 +38,6 @@ def config(filename='../config/database.ini', section='local'):
     return db_config
 
 
-def get_mysql_db(password: str, database: str = 'twitter'):
-    mysql_db = PostgresqlDatabase(
-        user='root',
-        password=password,
-        unix_socket="/cloudsql/crawling-315317:europe-west1:postgres",
-        database=database,
-    )
-    return mysql_db
-
-
-def init_database(password: str = 'postgres', database: str = 'twitter'):
-    # TODO switch to postgres
-
-    conn = pymysql.connect(
-        unix_socket="/cloudsql/crawling-315317:europe-west1:mysql-03",
-        user='root',
-        password=password,
-    )
-
-    sql = f'CREATE DATABASE IF NOT EXISTS {database}'
-    conn.cursor().execute(sql)
-    conn.close()
-
-
-def connect_database(database: str = 'twitter'):
-    try:
-        params = config()
-        print('Connecting to the PostgreSQL database...')
-        conn = psycopg2.connect(**params)
-        conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-
-        with conn.cursor() as cursor:
-            cursor.execute(f"CREATE DATABASE {database}")
-
-    except psycopg2.DatabaseError as error:
-        print(error)
-
-
 def connect_database_sqlalchemy(
         user: str = 'postgres',
         password: str = 'postgres',
@@ -95,7 +54,8 @@ def connect_database_sqlalchemy(
                 password=os.getenv('DB_PASSWORD'),
                 database=os.getenv('DB_NAME'),
                 query={
-                    "unix_sock": f"/cloudsql/{os.getenv('GOOGLE_PROJECT_ID', '')}:europe-west1:postgres2/.s.PGSQL.5432"
+                    "unix_sock": f"/cloudsql/{str(os.getenv('GOOGLE_PROJECT_ID', 'crawling-315317'))}"
+                                 f":europe-west1:postgres2/.s.PGSQL.5432"
                 }
             ),
         )
