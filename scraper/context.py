@@ -30,7 +30,6 @@ def config(filename='../config/database.ini', section='local'):
             raise Exception(f'Section {section} not found in the {filename} file')
     else:
         db_config = {
-            # "host": os.getenv("DB_HOST", "35.189.236.175"),
             "host": "",
             "user": os.getenv("DB_USER", ""),
             "database": os.getenv("DB_NAME", ""),
