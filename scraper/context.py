@@ -91,11 +91,11 @@ def connect_database_sqlalchemy(
         engine = sqlalchemy.create_engine(
             sqlalchemy.engine.url.URL.create(
                 drivername="postgresql+pg8000",
-                username=os.getenv('DB_USER'),  # e.g. "my-database-user"
-                password=os.getenv('DB_PASSWORD'),  # e.g. "my-database-password"
+                username=os.getenv('DB_USER'),
+                password=os.getenv('DB_PASSWORD'),
                 database=os.getenv('DB_NAME'),
                 query={
-                    "unix_sock": "/cloudsql/crawling-315317:europe-west1:postgres2/.s.PGSQL.5432"
+                    "unix_sock": f"/cloudsql/{os.getenv('GOOGLE_PROJECT_ID', '')}:europe-west1:postgres2/.s.PGSQL.5432"
                 }
             ),
         )
