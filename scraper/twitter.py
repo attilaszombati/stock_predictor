@@ -5,21 +5,17 @@ from datetime import datetime
 
 import pandas as pd
 import snscrape.modules.twitter as sntwitter
-from playhouse.shortcuts import model_to_dict
-from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
 
-from scraper.context import connect_database
-from scraper.custom_exceptions import UserModelNotFound
 from orm.models import (
     TwitterDataModelElonMusk,
     TwitterDataModelJeffBezos,
     TwitterDataModelBarackObama,
     TwitterDataModelJoeBiden,
     TwitterDataModelKamalaHarris,
-    postgres_db
 )
-
-engine = create_engine('postgresql://postgres:postgres@localhost:5432/twitter')
+from scraper.context import connect_database_sqlalchemy
+from scraper.custom_exceptions import UserModelNotFound
 
 user_models = {
     'elonmusk': TwitterDataModelElonMusk,
@@ -44,11 +40,12 @@ class TwitterScraperConfig:
 
 class TwitterScraper(TwitterScraperConfig):
 
-    def __init__(self, user: str, scraping_type: str):
+    def __init__(self, user: str, scraping_type: str, session):
         super().__init__(user)
         self.user = user
         self.query_time = None
         self.scraping_type = scraping_type
+        self.session: Session = session
 
     def validate_user_model(self):
         if self.user not in user_models:
@@ -56,12 +53,12 @@ class TwitterScraper(TwitterScraperConfig):
 
     @property
     def get_last_scraped_tweet(self):
-        return user_models.get(self.user).get_oldest_elem_from_table()
+        return user_models.get(self.user).get_oldest_elem_from_table(session=self.session)
 
     def set_query_time_until_last_scraped(self):
         last_record_time = datetime.strptime(str(self.get_last_scraped_tweet.tweeted_at), "%Y-%m-%d %H:%M:%S")
         logger.warning(f'Old tweets for the user : {self.user} '
-                       f'will be scraped from: {last_record_time}')
+                       f'will be scraped from : {last_record_time}')
         logger.info(f'The until_time variable is : {self.query_time}')
         self.query_time = f'until_time:{last_record_time.timestamp()}'
         return self.query_time
@@ -119,14 +116,14 @@ class TwitterScraper(TwitterScraperConfig):
                 tweeted_at=data.date,
                 hashtags=data.hashtags,
                 in_reply_to_tweet_id=data.inReplyToTweetId,
-                in_reply_to_user=data.inReplyToUser,
+                in_reply_to_user=check_reply(data.inReplyToUser),
                 language=data.lang,
                 like_count=data.likeCount,
                 mentioned_users=check_mentioned(data.mentionedUsers),
                 outlinks=data.outlinks,
                 place=data.place,
                 quote_count=data.quoteCount,
-                quoted_tweet=data.quotedTweet,
+                quoted_tweet=check_quoted_tweet(data.quotedTweet),
                 reply_count=data.replyCount,
                 retweet_count=data.retweetCount,
                 retweeted_tweet=data.retweetedTweet,
@@ -146,6 +143,18 @@ def check_mentioned(data):
     return data
 
 
+def check_quoted_tweet(data):
+    if data is not None:
+        return str(data.url)
+    return data
+
+
+def check_reply(data):
+    if data is not None:
+        return str(data.username)
+    return data
+
+
 def scraping_data_from_hashtag():
     max_item = sntwitter.TwitterHashtagScraper('bitcoin').get_items()
     preprocess = sorted(
@@ -155,24 +164,25 @@ def scraping_data_from_hashtag():
         yield tweet
 
 
-def apply_all_fixture(scraping_type, twitter_user):
-    scraper = TwitterScraper(user=twitter_user, scraping_type=scraping_type)
-    for fixture in scraper.create_models_from_scraping(scraping_type=scraping_type, twitter_user=twitter_user):
-        data = model_to_dict(fixture, recurse=False)
-        fixture.insert(data).execute()
+def apply_all_fixture(scraping_type, twitter_user, engine):
+    with Session(engine) as session:
+        scraper = TwitterScraper(user=twitter_user, scraping_type=scraping_type, session=session)
+        for fixture in scraper.create_models_from_scraping(scraping_type=scraping_type, twitter_user=twitter_user):
+            session.add(fixture)
+            session.commit()
 
     return str(scraper.get_last_scraped_tweet.tweeted_at).replace(" ", "-")
 
 
 if __name__ == '__main__':
-    connect_database(database='twitter')
-    postgres_db.create_tables([TwitterDataModelElonMusk])
-    last_tweeted_at = apply_all_fixture(scraping_type='old', twitter_user='elonmusk')
+    postgres_engine = connect_database_sqlalchemy(database='twitter')
+    TwitterDataModelJoeBiden.metadata.create_all(postgres_engine)
+    last_tweeted_at = apply_all_fixture(scraping_type='old', twitter_user='JoeBiden', engine=postgres_engine)
     df = pd.read_sql(
         """
         select * from elon_musk
         """,
-        engine
+        postgres_engine
     )
 
-    df.to_parquet(path=f'elon_musk_{last_tweeted_at}.pq', compression='snappy')
+    df.to_parquet(path=f'joe_biden_{last_tweeted_at}.pq', compression='snappy')

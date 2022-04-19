@@ -1,229 +1,98 @@
 # pylint:disable=no-name-in-module
-import datetime
 import logging
-from typing import Any
 
-from peewee import (
-    Model,
-    IntegrityError,
-    ModelBase,
-    DateTimeField,
-    CharField,
-    IntegerField,
-    DoesNotExist,
-    BooleanField, BigIntegerField, fn, )
-from playhouse.shortcuts import model_to_dict
+from sqlalchemy import Column, Integer, String, DateTime, func, BigInteger
+from sqlalchemy.dialects.postgresql import INTEGER, BIGINT
+from sqlalchemy.exc import NoResultFound
+from sqlalchemy.orm import declarative_base, Session
 
-from scraper.context import get_postgres_db
-
-postgres_db = get_postgres_db()
+from sqlalchemy import select
 
 logger = logging.getLogger(__name__)
 
-
-class BaseModel(Model):
-    # pylint: disable=no-member
-    @classmethod
-    def table_name(cls) -> str:
-        return cls._meta.table_name
-
-    # pylint: disable=no-member
-    @classmethod
-    def bulk_create_mysql(cls, model_list, batch_size=1000):
-        rows = [model_to_dict(model, recurse=False) for model in model_list]
-        models = []
-
-        for index in range(0, len(rows), batch_size):
-            rows_batch = rows[index: index + batch_size]
-            # pylint: disable=no-value-for-parameter
-            cls.insert_many(rows_batch).execute()
-
-            newly_created = list(cls.select().where(cls._meta.primary_key >= fn.last_insert_id()))
-            if len(newly_created) != len(rows_batch):
-                raise ValueError(
-                    f'The newly created record count ({len(newly_created)})'
-                    f' does not match with the '
-                    f'record count sent to the DB ({len(rows_batch)})'
-                )
-            models.extend(newly_created)
-
-        return models
-
-    # pylint: disable=no-member
-    @classmethod
-    def create_table(cls, safe=True, **kwargs):  # pylint: disable=arguments-differ
-        try:
-            comment_literal = f'COMMENT="{cls._meta.comment}"'
-
-            if cls._meta.table_settings is None:
-                cls._meta.table_settings = [comment_literal]
-            else:
-                cls._meta.table_settings.append(comment_literal)
-        except AttributeError:
-            pass
-
-        return super().create_table(safe, **kwargs)
-
-    class Meta:
-        # pylint:disable=too-few-public-methods
-        legacy_table_names = False
-
-    # pylint:disable=logging-fstring-interpolation
-    def insert_if_not_exists(self) -> bool:
-        """
-        Try to insert the item in the database.
-        Only inserts if it its not exists by PK.
-        :return: True if item was inserted, false if wasn't
-        """
-        try:
-            self.save(force_insert=True)
-        except IntegrityError as err:
-            error_message = err.args[1]
-            if 'Duplicate entry' in error_message:
-                logger.debug(
-                    f'not inserted: {self._meta.table_name} {model_to_dict(self, max_depth=0)}'
-                )
-            else:
-                raise err
-            return False
-        except Exception as err:  # pylint: disable=broad-except
-            logger.warning(
-                f'Couldn\'t insert: {self._meta.table_name}'
-                f' {model_to_dict(self, max_depth=0)}|\n{err}'
-            )
-            return False
-        return True
-
-    @classmethod
-    def create_add_to_models_meta_class(cls, table_name) -> type:
-        class AddToModels(ModelBase):
-            def __new__(cls, name, bases, attrs) -> Any:
-                new_cls = super().__new__(cls, name, bases, attrs)
-                meta = attrs.pop('Meta', None)
-                if meta is not None:
-                    meta.table_name = table_name
-                return new_cls
-
-        return AddToModels
+Base = declarative_base()
 
 
-class TwitterBaseModel(BaseModel):
-    id = CharField(primary_key=True)
-    cashtags = CharField(null=True, max_length=1000)
-    content = CharField(max_length=1000)
-    conversation_id = BigIntegerField()
-    coordinates = CharField(null=True, max_length=1000)
-    tweeted_at = DateTimeField()
-    hashtags = CharField(null=True, max_length=1000)
-    in_reply_to_tweet_id = BigIntegerField(null=True)
-    in_reply_to_user = CharField(null=True, max_length=1000)
-    language = CharField(max_length=1000)
-    like_count = BigIntegerField(null=True)
-    mentioned_users = CharField(null=True)
-    outlinks = CharField(null=True, max_length=1000)
-    place = CharField(null=True, max_length=1000)
-    quote_count = BigIntegerField()
-    quoted_tweet = BooleanField(null=True)
-    reply_count = BigIntegerField(null=True)
-    retweet_count = BigIntegerField(null=True)
-    retweeted_tweet = BooleanField(null=True)
-    source = CharField(max_length=1000)
-    source_url = CharField(max_length=1000)
-    url = CharField(max_length=1000)
-    user_name = CharField(max_length=1000)
-    created_at = DateTimeField(default=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+class TwitterBaseModel(Base):
+    __abstract__ = True
 
-    class Meta:
-        # pylint:disable=too-few-public-methods
-        database = postgres_db
+    id = Column(BIGINT(), primary_key=True, index=True, autoincrement=True)
+    cashtags = Column(String(1000), index=True, nullable=True)
+    content = Column(String(1000))
+    conversation_id = Column(BigInteger())
+    coordinates = Column(String(1000), nullable=True)
+    tweeted_at = Column(DateTime)
+    hashtags = Column(String(1000), nullable=True)
+    in_reply_to_tweet_id = Column(BigInteger(), nullable=True)
+    in_reply_to_user = Column(String(1000), nullable=True)
+    language = Column(String(1000))
+    like_count = Column(BigInteger(), nullable=True)
+    mentioned_users = Column(String(1000))
+    outlinks = Column(String(1000), nullable=True)
+    place = Column(String(1000), nullable=True)
+    quote_count = Column(BigInteger())
+    quoted_tweet = Column(String(1000), nullable=True)
+    reply_count = Column(BigInteger(), nullable=True)
+    retweet_count = Column(BigInteger(), nullable=True)
+    retweeted_tweet = Column(String(1000), nullable=True)
+    source = Column(String(1000))
+    source_url = Column(String(1000))
+    url = Column(String(1000))
+    user_name = Column(String(1000))
+    created_at = Column(DateTime, server_default=func.now())
+
+    __mapper_args__ = {'eager_defaults': True}
 
     @classmethod
     def get_latest_elem_from_table(cls):
         try:
             last_elem = cls.select(cls).order_by(cls.tweeted_at.desc()).get()
-        except DoesNotExist:
+        except NoResultFound:
             return None
         else:
             print(f'The latest tweet has been tweeted at: {last_elem.tweeted_at}')
             return last_elem
 
     @classmethod
-    def get_oldest_elem_from_table(cls):
-        try:
-            last_elem = cls.select(cls).order_by(cls.tweeted_at.asc()).get()
-        except DoesNotExist:
+    def get_oldest_elem_from_table(cls, session: Session):
+        last_elem = select(cls).order_by(cls.tweeted_at.asc())
+        res = session.execute(last_elem).scalars().first()
+        if not res:
             return None
-        else:
-            print(f'The oldest tweet has been tweeted at: {last_elem.tweeted_at}')
-            return last_elem
+        print(f'The oldest tweet has been tweeted at: {res.tweeted_at}')
+        return res
 
 
 class TwitterDataModelElonMusk(TwitterBaseModel):
-    # pylint: disable=too-few-public-methods
-    class Meta:
-        table_name = 'elon_musk'
+    __tablename__ = 'elon_musk'
 
 
 class TwitterDataModelJeffBezos(TwitterBaseModel):
-    # pylint: disable=too-few-public-methods
-    class Meta:
-        table_name = 'jeff_bezos'
+    __tablename__ = 'jeff_bezos'
 
 
 class TwitterDataModelBarackObama(TwitterBaseModel):
-    # pylint: disable=too-few-public-methods
-    class Meta:
-        table_name = 'barack_obama'
+    __tablename__ = 'barack_obama'
 
 
 class TwitterDataModelJoeBiden(TwitterBaseModel):
-    # pylint: disable=too-few-public-methods
-    class Meta:
-        table_name = 'joe_biden'
+    __tablename__ = 'joe_biden'
 
 
 class TwitterDataModelKamalaHarris(TwitterBaseModel):
-    # pylint: disable=too-few-public-methods
-    class Meta:
-        table_name = 'kamala_harris'
+    __tablename__ = 'kamala_harris'
 
 
-class RedditDataModel(BaseModel):
-    author = CharField(null=True)
-    created_at = DateTimeField(primary_key=True)
-    post_id = IntegerField(null=False)
-    # link = CharField()
-    self_text = CharField(null=True)
-    subreddit = CharField()
-    url = CharField()
-    scraped_at = DateTimeField(default=datetime.datetime.now)
-    title = CharField()
+class RedditDataModel(Base):
+    # pylint:disable=too-few-public-methods
+    __tablename__ = 'wallstreetbets'
 
-    class Meta:
-        # pylint:disable=too-few-public-methods
-        database = postgres_db
-        table_name = 'wallstreetbets'
-
-
-class RedditOfficialApiModel(BaseModel):
-    author = CharField(null=True)
-    title = CharField()
-    score = IntegerField()
-    num_comments = IntegerField()
-    self_text = CharField(null=True)
-    created_at = DateTimeField(primary_key=True)
-    total_awards_received = IntegerField()
-    scraped_at = DateTimeField(default=datetime.datetime.now)
-    view_count = IntegerField(null=True)
-    post_id = CharField()
-    subreddit = CharField()
-    subreddit_id = IntegerField()
-    url = CharField()
-
-    # upvote = IntegerField()
-    # upvote_ratio = IntegerField()
-
-    class Meta:
-        # pylint:disable=too-few-public-methods
-        database = postgres_db
-        table_name = 'wallstreetbets_official_api'
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    author = Column(String(1000), nullable=True)
+    posted_at = Column(DateTime)
+    post_id = Column(INTEGER, nullable=False)
+    self_text = Column(String(1000), nullable=True)
+    subreddit = Column(String(1000))
+    url = Column(String(1000))
+    created_at = Column(DateTime, server_default=func.now())
+    title = Column(String(1000))
