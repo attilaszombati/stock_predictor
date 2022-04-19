@@ -2,11 +2,9 @@
 import logging
 
 from sqlalchemy import Column, Integer, String, DateTime, func, BigInteger
-from sqlalchemy.dialects.postgresql import INTEGER, BIGINT
-from sqlalchemy.exc import NoResultFound
-from sqlalchemy.orm import declarative_base, Session
-
 from sqlalchemy import select
+from sqlalchemy.dialects.postgresql import INTEGER, BIGINT
+from sqlalchemy.orm import declarative_base, Session
 
 logger = logging.getLogger(__name__)
 
@@ -44,14 +42,12 @@ class TwitterBaseModel(Base):
     __mapper_args__ = {'eager_defaults': True}
 
     @classmethod
-    def get_latest_elem_from_table(cls):
-        try:
-            last_elem = cls.select(cls).order_by(cls.tweeted_at.desc()).get()
-        except NoResultFound:
+    def get_latest_elem_from_table(cls, session: Session):
+        last_elem = select(cls).order_by(cls.tweeted_at.desc())
+        res = session.execute(last_elem).scalars().first()
+        if not res:
             return None
-        else:
-            print(f'The latest tweet has been tweeted at: {last_elem.tweeted_at}')
-            return last_elem
+        return res
 
     @classmethod
     def get_oldest_elem_from_table(cls, session: Session):
@@ -59,7 +55,6 @@ class TwitterBaseModel(Base):
         res = session.execute(last_elem).scalars().first()
         if not res:
             return None
-        print(f'The oldest tweet has been tweeted at: {res.tweeted_at}')
         return res
 
 

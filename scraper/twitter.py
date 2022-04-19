@@ -55,20 +55,24 @@ class TwitterScraper(TwitterScraperConfig):
     def get_last_scraped_tweet(self):
         return user_models.get(self.user).get_oldest_elem_from_table(session=self.session)
 
+    @property
+    def get_newest_scraped_tweet(self):
+        return user_models.get(self.user).get_latest_elem_from_table(session=self.session)
+
     def set_query_time_until_last_scraped(self):
         last_record_time = datetime.strptime(str(self.get_last_scraped_tweet.tweeted_at), "%Y-%m-%d %H:%M:%S")
         logger.warning(f'Old tweets for the user : {self.user} '
                        f'will be scraped from : {last_record_time}')
-        logger.info(f'The until_time variable is : {self.query_time}')
+        logger.warning(f'The until_time variable is : {self.query_time}')
         self.query_time = f'until_time:{last_record_time.timestamp()}'
         return self.query_time
 
     def set_query_time_from_last_scraped(self):
-        last_record_time = datetime.strptime(str(self.get_last_scraped_tweet.tweeted_at), "%Y-%m-%d %H:%M:%S")
+        last_record_time = datetime.strptime(str(self.get_newest_scraped_tweet.tweeted_at), "%Y-%m-%d %H:%M:%S")
         scraper_time = int(last_record_time.timestamp()) + 1
         self.query_time = f'since_time:{scraper_time}'
-        logger.info(f'New tweets for the user : {self.user} will be scraped from: {self.query_time}')
-        logger.info(f'The until_time variable is : {self.query_time}')
+        logger.warning(f'New tweets for the user : {self.user} will be scraped from: {self.query_time}')
+        logger.warning(f'The until_time variable is : {self.query_time}')
         return self.query_time
 
     def scraping_data_history(self):
@@ -78,7 +82,7 @@ class TwitterScraper(TwitterScraperConfig):
             scraper_time = self.since_time_str
 
         query = f'from:{self.user} {scraper_time[:-2]}'
-        logger.info(f'The search query is : {query}')
+        logger.warning(f'The search query is : {query}')
         tweets = sntwitter.TwitterSearchScraper(query).get_items()
         for tweet in tweets:
             yield tweet
@@ -92,7 +96,7 @@ class TwitterScraper(TwitterScraperConfig):
 
         until_time = int(time.time() - (86400 * 3))
         query = f'from:{self.user} {since_time} until_time:{until_time}'
-        logger.info(f'The search query is : {query}')
+        logger.warning(f'The search query is : {query}')
         tweets = sntwitter.TwitterSearchScraper(query).get_items()
         for tweet in tweets:
             if tweet:
@@ -176,8 +180,8 @@ def apply_all_fixture(scraping_type, twitter_user, engine):
 
 if __name__ == '__main__':
     postgres_engine = connect_database_sqlalchemy(database='twitter')
-    TwitterDataModelJoeBiden.metadata.create_all(postgres_engine)
-    last_tweeted_at = apply_all_fixture(scraping_type='old', twitter_user='JoeBiden', engine=postgres_engine)
+    TwitterDataModelElonMusk.metadata.create_all(postgres_engine)
+    last_tweeted_at = apply_all_fixture(scraping_type='since', twitter_user='elonmusk', engine=postgres_engine)
     df = pd.read_sql(
         """
         select * from elon_musk
@@ -185,4 +189,4 @@ if __name__ == '__main__':
         postgres_engine
     )
 
-    df.to_parquet(path=f'joe_biden_{last_tweeted_at}.pq', compression='snappy')
+    df.to_parquet(path=f'elon_musk_{last_tweeted_at}.pq', compression='snappy')
