@@ -3,7 +3,6 @@ import logging
 import time
 from datetime import datetime
 
-import pandas as pd
 import snscrape.modules.twitter as sntwitter
 from sqlalchemy.orm import Session
 
@@ -14,7 +13,7 @@ from orm.models import (
     TwitterDataModelJoeBiden,
     TwitterDataModelKamalaHarris,
 )
-from scraper.context import connect_database_sqlalchemy
+
 from scraper.custom_exceptions import UserModelNotFound
 
 user_models = {
@@ -178,15 +177,15 @@ def apply_all_fixture(scraping_type, twitter_user, engine):
     return str(scraper.get_last_scraped_tweet.tweeted_at).replace(" ", "-")
 
 
-if __name__ == '__main__':
-    postgres_engine = connect_database_sqlalchemy(database='twitter')
-    TwitterDataModelElonMusk.metadata.create_all(postgres_engine)
-    last_tweeted_at = apply_all_fixture(scraping_type='since', twitter_user='elonmusk', engine=postgres_engine)
-    df = pd.read_sql(
-        """
-        select * from elon_musk
-        """,
-        postgres_engine
-    )
-
-    df.to_parquet(path=f'elon_musk_{last_tweeted_at}.pq', compression='snappy')
+# if __name__ == '__main__':
+#     postgres_engine = connect_database_sqlalchemy(database='twitter')
+#     TwitterDataModelElonMusk.metadata.create_all(postgres_engine)
+#     last_tweeted_at = apply_all_fixture(scraping_type='since', twitter_user='elonmusk', engine=postgres_engine)
+#     df = pd.read_sql(
+#         """
+#         select * from elon_musk
+#         """,
+#         postgres_engine
+#     )
+#
+#     df.to_parquet(path=f'elon_musk_{last_tweeted_at}.pq', compression='snappy')
