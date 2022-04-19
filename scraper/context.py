@@ -31,11 +31,11 @@ def config(filename='../config/database.ini', section='local'):
     else:
         db_config = {
             # "host": os.getenv("DB_HOST", "35.189.236.175"),
-            "host": "/cloudsql/crawling-315317:europe-west1:postgres",
-            "user": os.getenv("DB_USER", "root"),
-            "database": os.getenv("DB_NAME", "twitter"),
-            "password": os.getenv("DB_PASSWORD", "postgrestwitter"),
-            "port": os.getenv("DB_PORT", "5432")
+            "host": "",
+            "user": os.getenv("DB_USER", ""),
+            "database": os.getenv("DB_NAME", ""),
+            "password": os.getenv("DB_PASSWORD", ""),
+            "port": os.getenv("DB_PORT", "")
         }
 
     return db_config
