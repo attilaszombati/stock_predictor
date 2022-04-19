@@ -4,9 +4,9 @@ from configparser import ConfigParser
 
 import psycopg2
 import pymysql
+import sqlalchemy
 from peewee import PostgresqlDatabase
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-from sqlalchemy import create_engine
 from sqlalchemy_utils import database_exists, create_database
 
 
@@ -17,7 +17,7 @@ def get_postgres_db():
 
 
 def config(filename='../config/database.ini', section='local'):
-    if os.getenv("RUNTIME") == "cloud":
+    if os.getenv("RUNTIME") != "cloud":
         parser = ConfigParser()
         parser.read(filename)
 
@@ -30,11 +30,12 @@ def config(filename='../config/database.ini', section='local'):
             raise Exception(f'Section {section} not found in the {filename} file')
     else:
         db_config = {
-            "host": "",
-            "user": os.getenv("DB_USER", ""),
-            "database": os.getenv("DB_NAME", ""),
-            "password": os.getenv("DB_PASSWORD", ""),
-            "port": os.getenv("DB_PORT", "")
+            # "host": os.getenv("DB_HOST", "35.189.236.175"),
+            "host": "/cloudsql/crawling-315317:europe-west1:postgres",
+            "user": os.getenv("DB_USER", "root"),
+            "database": os.getenv("DB_NAME", "twitter"),
+            "password": os.getenv("DB_PASSWORD", "postgrestwitter"),
+            "port": os.getenv("DB_PORT", "5432")
         }
 
     return db_config
@@ -84,7 +85,20 @@ def connect_database_sqlalchemy(
         container_name: str = 'localhost',
         database: str = 'twitter'
 ):
-    engine = create_engine(f'postgresql+psycopg2://{user}:{password}@{container_name}:5432/{database}')
+    if os.getenv("RUNTIME") != "cloud":
+        engine = sqlalchemy.create_engine(f'postgresql+pg8000://{user}:{password}@{container_name}:5432/{database}')
+    else:
+        engine = sqlalchemy.create_engine(
+            sqlalchemy.engine.url.URL.create(
+                drivername="postgresql+pg8000",
+                username="postgres",  # e.g. "my-database-user"
+                password="postgrestwitter",  # e.g. "my-database-password"
+                database="twitter",
+                query={
+                    "unix_sock": "/cloudsql/crawling-315317:europe-west1:postgres2/.s.PGSQL.5432"
+                }
+            ),
+        )
     if not database_exists(engine.url):
         create_database(engine.url)
 
