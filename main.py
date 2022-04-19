@@ -17,7 +17,7 @@ def main(user: str = 'elonmusk', scraping_type: str = 'since'):
     last_tweeted_at = apply_all_fixture(scraping_type=scraping_type, twitter_user=user, engine=postgres_engine)
     user_df = pd.read_sql(
         f"""
-        select * from {user.lower()}
+        select * from elon_musk
         """,
         postgres_engine
     )
