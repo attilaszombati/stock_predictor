@@ -23,7 +23,7 @@ def main(user: str = 'elonmusk', scraping_type: str = 'since'):
     )
 
     user_df.to_parquet(path=f'/tmp/{user}_{last_tweeted_at}.pq', compression='snappy')
-    save_data_to_cloud_storage(bucket_name=f'twitter_scraped_data/{user}',
+    save_data_to_cloud_storage(bucket_name=f'twitter_scraped_data',
                                file_name=f'{user}_{last_tweeted_at}.pq',
                                parquet_file=f'/tmp/{user}_{last_tweeted_at}.pq')
 
