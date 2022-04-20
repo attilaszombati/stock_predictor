@@ -42,7 +42,7 @@ class TwitterBaseModel(Base):
     __mapper_args__ = {'eager_defaults': True}
 
     @classmethod
-    def get_latest_elem_from_table(cls, session: Session):
+    def get_newest_tweeted_at_elem(cls, session: Session):
         last_elem = select(cls).order_by(cls.tweeted_at.desc())
         res = session.execute(last_elem).scalars().first()
         if not res:
@@ -50,7 +50,7 @@ class TwitterBaseModel(Base):
         return res
 
     @classmethod
-    def get_oldest_elem_from_table(cls, session: Session):
+    def get_oldest_tweeted_at_elem(cls, session: Session):
         last_elem = select(cls).order_by(cls.tweeted_at.asc())
         res = session.execute(last_elem).scalars().first()
         if not res:
