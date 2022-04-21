@@ -106,14 +106,13 @@ class TwitterScraperBase:
             for data in scraping_batch
         )
 
-    @staticmethod
-    def load_scraped_data(scraped_batch, engine: Engine):
+    def load_scraped_data(self, scraped_batch, engine: Engine):
         with Session(engine) as sess:
-            for fixture in scraper.create_models_from_scraping(scraping_batch=scraped_batch):
+            for fixture in self.create_models_from_scraping(scraping_batch=scraped_batch):
                 sess.add(fixture)
                 sess.commit()
 
-        return str(scraper.get_newest_scraped_tweet.tweeted_at).replace(" ", "-")
+        return str(self.get_newest_scraped_tweet.tweeted_at).replace(" ", "-")
 
 
 class TwitterNewsScraper(TwitterScraperBase):
