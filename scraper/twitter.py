@@ -146,9 +146,6 @@ class TwitterHistoryScraper(TwitterScraperBase):
 
     def set_query_time_until_last_scraped(self):
         last_record_time = self.get_last_scraped_tweet.tweeted_at
-        print("X" * 50)
-        print(last_record_time)
-        print("X" * 50)
         logger.warning(f'{self.user} will be scraped from the far far away until: {last_record_time}')
         self.query_time = f'until_time:{last_record_time.timestamp()}'
         return self.query_time
