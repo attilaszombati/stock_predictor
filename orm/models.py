@@ -110,6 +110,7 @@ class RedditDataModel(Base):
 class RedditOfficialApiModel(Base):
     __tablename__ = 'wallstreetbets_official_api'
 
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     author = Column(String(1000), nullable=True)
     title = Column(String(1000))
     score = Column(INTEGER, nullable=False)
