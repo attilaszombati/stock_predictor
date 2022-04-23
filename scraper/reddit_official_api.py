@@ -3,11 +3,13 @@ import os
 import time
 from datetime import datetime
 
+import pandas as pd
 from praw import Reddit
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from orm.models import RedditOfficialApiModel
+from scraper.context import connect_database_sqlalchemy
 
 reddit = Reddit(
     client_id=os.getenv("REDDIT_CLIENT_ID", ""),
@@ -67,16 +69,16 @@ def load_scraped_data(engine: Engine):
         return str(RedditOfficialApiModel.get_newest_reddit_elem(sess).posted_at).replace(" ", "-")
 
 
-# if __name__ == '__main__':
-#     postgres_engine: Engine = connect_database_sqlalchemy(database='reddit')
-#     load_scraped_data(engine=postgres_engine)
-#
-#     last_tweeted_at = load_scraped_data(engine=postgres_engine)
-#     df = pd.read_sql(
-#         """
-#         select * from wallstreetbets_official_api
-#         """,
-#         postgres_engine
-#     )
-#
-#     df.to_parquet(path=f'wallstreetbets_official_api_{last_tweeted_at}.pq', compression='snappy')
+if __name__ == '__main__':
+    postgres_engine: Engine = connect_database_sqlalchemy(database='reddit')
+    load_scraped_data(engine=postgres_engine)
+
+    last_tweeted_at = load_scraped_data(engine=postgres_engine)
+    df = pd.read_sql(
+        """
+        select * from wallstreetbets_official_api
+        """,
+        postgres_engine
+    )
+
+    df.to_parquet(path=f'wallstreetbets_official_api_{last_tweeted_at}.pq', compression='snappy')
