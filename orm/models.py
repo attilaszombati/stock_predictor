@@ -1,4 +1,3 @@
-# pylint:disable=no-name-in-module
 import logging
 
 from sqlalchemy import Column, Integer, String, DateTime, func, BigInteger
@@ -79,7 +78,6 @@ class TwitterDataModelKamalaHarris(TwitterBaseModel):
 
 
 class RedditDataModel(Base):
-    # pylint:disable=too-few-public-methods
     __tablename__ = 'wallstreetbets'
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
@@ -91,3 +89,55 @@ class RedditDataModel(Base):
     url = Column(String(1000))
     created_at = Column(DateTime, server_default=func.now())
     title = Column(String(1000))
+
+    @classmethod
+    def get_newest_reddit_elem(cls, session: Session):
+        last_elem = select(cls).order_by(cls.tweeted_at.desc())
+        res = session.execute(last_elem).scalars().first()
+        if not res:
+            return None
+        return res
+
+    @classmethod
+    def get_oldest_reddit_elem(cls, session: Session):
+        last_elem = select(cls).order_by(cls.tweeted_at.asc())
+        res = session.execute(last_elem).scalars().first()
+        if not res:
+            return None
+        return res
+
+
+class RedditOfficialApiModel(Base):
+    __tablename__ = 'wallstreetbets_official_api'
+
+    author = Column(String(1000), nullable=True)
+    title = Column(String(1000))
+    score = Column(INTEGER, nullable=False)
+    num_comments = Column(INTEGER, nullable=False)
+    self_text = Column(String(1000), nullable=True)
+    posted_at = Column(DateTime)
+    total_awards_received = Column(INTEGER, nullable=False)
+    scraped_at = Column(DateTime, server_default=func.now())
+    view_count = Column(String(1000), nullable=True)
+    post_id = Column(INTEGER, nullable=False)
+    subreddit = Column(String(1000))
+    subreddit_id = Column(INTEGER, nullable=False)
+    url = Column(String(1000))
+    # upvote = IntegerField()
+    # upvote_ratio = IntegerField()
+
+    @classmethod
+    def get_newest_reddit_elem(cls, session: Session):
+        last_elem = select(cls).order_by(cls.posted_at.desc())
+        res = session.execute(last_elem).scalars().first()
+        if not res:
+            return None
+        return res
+
+    @classmethod
+    def get_oldest_reddit_elem(cls, session: Session):
+        last_elem = select(cls).order_by(cls.posted_at.asc())
+        res = session.execute(last_elem).scalars().first()
+        if not res:
+            return None
+        return res

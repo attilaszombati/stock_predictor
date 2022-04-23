@@ -1,11 +1,15 @@
-# pylint:disable=no-name-in-module
+# pylint:disable=no-name-in-module, no-member
 import os
 import time
 from datetime import datetime
 
+import pandas as pd
 from praw import Reddit
+from sqlalchemy.engine import Engine
+from sqlalchemy.orm import Session
 
-from orm.models import RedditOfficialApiModel, postgres_db
+from orm.models import RedditOfficialApiModel
+from scraper.context import connect_database_sqlalchemy
 
 reddit = Reddit(
     client_id=os.getenv("REDDIT_CLIENT_ID", ""),
@@ -56,11 +60,25 @@ def official_reddit_api():
     )
 
 
-def apply_all_fixture():
-    for fixture in official_reddit_api():
-        fixture.insert_if_not_exists()
+def load_scraped_data(engine: Engine):
+    with Session(engine) as sess:
+        for fixture in official_reddit_api():
+            sess.add(fixture)
+            sess.commit()
+
+        return str(RedditOfficialApiModel.get_newest_reddit_elem(sess).posted_at).replace(" ", "-")
 
 
 if __name__ == '__main__':
-    postgres_db.create_tables([RedditOfficialApiModel])
-    apply_all_fixture()
+    postgres_engine: Engine = connect_database_sqlalchemy(database='reddit')
+    load_scraped_data(engine=postgres_engine)
+
+    last_tweeted_at = load_scraped_data(engine=postgres_engine)
+    df = pd.read_sql(
+        """
+        select * from wallstreetbets_official_api
+        """,
+        postgres_engine
+    )
+
+    df.to_parquet(path=f'wallstreetbets_official_api_{last_tweeted_at}.pq', compression='snappy')
