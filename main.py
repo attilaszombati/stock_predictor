@@ -11,6 +11,14 @@ from scraper.twitter import user_models, TwitterNewsScraper, TwitterHistoryScrap
 
 storage_client = storage.Client(project=os.getenv('GOOGLE_PROJECT_ID', 'crawling-315317'))
 
+user_tables = {
+    'elonmusk': "elon_musk",
+    'JeffBezos': "jeff_bezos",
+    'BarackObama': "barack_obama",
+    'JoeBiden': "joe_biden",
+    'KamalaHarris': "kamala_harris",
+}
+
 
 def main(user: str = 'elonmusk', scraping_type: str = 'news'):
     postgres_engine = connect_database_sqlalchemy(database='twitter')
@@ -24,17 +32,18 @@ def main(user: str = 'elonmusk', scraping_type: str = 'news'):
             batch = scraper.set_query_for_history_scraper()
 
     last_tweeted_at = scraper.load_scraped_data(engine=postgres_engine, scraped_batch=batch)
+    postgres_table = user_tables.get(user)
     user_df = pd.read_sql(
-        """
-        select * from elon_musk
+        f"""
+        select * from {postgres_table}
         """,
         postgres_engine
     )
 
-    user_df.to_parquet(path=f'/tmp/{user}_{last_tweeted_at}.pq', compression='snappy')
+    user_df.to_parquet(path=f'/tmp/{postgres_table}_{last_tweeted_at}.pq', compression='snappy')
     save_data_to_cloud_storage(bucket_name='twitter_scraped_data',
-                               file_name=f'{user}_{last_tweeted_at}.pq',
-                               parquet_file=f'/tmp/{user}_{last_tweeted_at}.pq')
+                               file_name=f'{postgres_table}/{last_tweeted_at}.pq',
+                               parquet_file=f'/tmp/{postgres_table}_{last_tweeted_at}.pq')
 
 
 def save_data_to_cloud_storage(bucket_name: str, file_name: str, parquet_file: str):
