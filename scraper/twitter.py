@@ -3,7 +3,6 @@ import logging
 import time
 from datetime import datetime
 
-import pandas as pd
 import snscrape.modules.twitter as sntwitter
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
@@ -15,8 +14,6 @@ from orm.models import (
     TwitterDataModelJoeBiden,
     TwitterDataModelKamalaHarris,
 )
-from scraper.context import connect_database_sqlalchemy
-
 from scraper.custom_exceptions import UserModelNotFound
 
 user_models = {
@@ -172,25 +169,25 @@ def scraping_data_from_hashtag():
         yield tweet
 
 
-if __name__ == '__main__':
-    postgres_engine: Engine = connect_database_sqlalchemy(database='twitter')
-    scraping_type = 'history'
-    twitter_user = 'elonmusk'
-    user_models.get(twitter_user).metadata.create_all(postgres_engine)
-    with Session(postgres_engine) as session:
-        if scraping_type == 'news':
-            scraper = TwitterNewsScraper(user=twitter_user, database_session=session)
-            batch = scraper.scraping_data_news()
-        else:
-            scraper = TwitterHistoryScraper(user=twitter_user, database_session=session)
-            batch = scraper.set_query_for_history_scraper()
-
-    last_tweeted_at = scraper.load_scraped_data(engine=postgres_engine, scraped_batch=batch)
-    df = pd.read_sql(
-        """
-        select * from elon_musk
-        """,
-        postgres_engine
-    )
-
-    df.to_parquet(path=f'{twitter_user}_{last_tweeted_at}.pq', compression='snappy')
+# if __name__ == '__main__':
+#     postgres_engine: Engine = connect_database_sqlalchemy(database='twitter')
+#     scraping_type = 'history'
+#     twitter_user = 'elonmusk'
+#     user_models.get(twitter_user).metadata.create_all(postgres_engine)
+#     with Session(postgres_engine) as session:
+#         if scraping_type == 'news':
+#             scraper = TwitterNewsScraper(user=twitter_user, database_session=session)
+#             batch = scraper.scraping_data_news()
+#         else:
+#             scraper = TwitterHistoryScraper(user=twitter_user, database_session=session)
+#             batch = scraper.set_query_for_history_scraper()
+#
+#     last_tweeted_at = scraper.load_scraped_data(engine=postgres_engine, scraped_batch=batch)
+#     df = pd.read_sql(
+#         """
+#         select * from elon_musk
+#         """,
+#         postgres_engine
+#     )
+#
+#     df.to_parquet(path=f'{twitter_user}_{last_tweeted_at}.pq', compression='snappy')
