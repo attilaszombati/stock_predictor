@@ -119,7 +119,7 @@ class TwitterNewsScraper(TwitterScraperBase):
         super().__init__(user, database_session)
 
     def set_query_time_from_last_scraped(self):
-        last_record_time = datetime.strptime(str(self.get_newest_scraped_tweet.tweeted_at), "%Y-%m-%d %H:%M:%S")
+        last_record_time = self.get_last_scraped_tweet.tweeted_at
         scraper_time = int(last_record_time.timestamp()) + 1
         self.query_time = f'since_time:{scraper_time}'
         logger.warning(f'New tweets for the user : {self.user} will be scraped from : {last_record_time}')
@@ -145,7 +145,10 @@ class TwitterHistoryScraper(TwitterScraperBase):
         super().__init__(user, database_session)
 
     def set_query_time_until_last_scraped(self):
-        last_record_time = datetime.strptime(str(self.get_last_scraped_tweet.tweeted_at), "%Y-%m-%d %H:%M:%S")
+        last_record_time = self.get_last_scraped_tweet.tweeted_at
+        print("X" * 50)
+        print(last_record_time)
+        print("X" * 50)
         logger.warning(f'{self.user} will be scraped from the far far away until: {last_record_time}')
         self.query_time = f'until_time:{last_record_time.timestamp()}'
         return self.query_time
