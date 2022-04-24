@@ -155,10 +155,10 @@ class TwitterHistoryScraper(TwitterScraperBase):
             scraper_time = self.set_query_time_until_last_scraped()
         else:
             scraper_time = self.since_time_str
-            logger.warning(f'{self.user} will be scraped from the far far away until last day')
+            logger.warning(f'{self.user} will be scraped from the far far away until the previous day')
 
         day_in_timestamp = 86400
-        until_time = int(time.time() - (day_in_timestamp * 3))
+        until_time = int(time.time() - (day_in_timestamp * 1))
         query = f'from:{self.user} {scraper_time[:-2]} until_time:{until_time}'
         logger.warning(f'The search query is : {query}')
         yield from self.start_scraping(query)
@@ -181,7 +181,7 @@ if __name__ == '__main__':
     with Session(postgres_engine) as session:
         if scraping_type == 'news':
             scraper = TwitterNewsScraper(user=twitter_user, database_session=session,
-                                         last_scraped_tweet='2022-04-21-18:28:01')
+                                         last_scraped_tweet='2022-04-23-20:30:01')
             batch = scraper.scraping_data_news()
         else:
             scraper = TwitterHistoryScraper(user=twitter_user, database_session=session)
