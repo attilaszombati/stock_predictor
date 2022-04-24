@@ -11,7 +11,4 @@ class SecretManger:
         response = self.client.access_secret_version(request={"name": name})
         payload = response.payload.data.decode("UTF-8")
         return payload
-
-
-if __name__ == "__main__":
-    print(SecretManger().get_secret())
+    

@@ -1,15 +1,12 @@
 # pylint:disable=no-name-in-module, unexpected-keyword-arg
 import json
-import os
 
 import pandas as pd
-from google.cloud import storage
 from sqlalchemy.orm import Session
 
 from scraper.context import connect_database_sqlalchemy
 from scraper.twitter import user_models, TwitterNewsScraper, TwitterHistoryScraper
-
-storage_client = storage.Client(project=os.getenv('GOOGLE_PROJECT_ID', 'crawling-315317'))
+from utils.cloud_storage import CloudStorageUtils
 
 user_tables = {
     'elonmusk': "elon_musk",
@@ -41,15 +38,13 @@ def main(user: str = 'elonmusk', scraping_type: str = 'news'):
     )
 
     user_df.to_parquet(path=f'/tmp/{postgres_table}_{last_tweeted_at}.pq', compression='snappy')
-    save_data_to_cloud_storage(bucket_name='twitter_scraped_data',
-                               file_name=f'{postgres_table}/{last_tweeted_at}.pq',
-                               parquet_file=f'/tmp/{postgres_table}_{last_tweeted_at}.pq')
-
-
-def save_data_to_cloud_storage(bucket_name: str, file_name: str, parquet_file: str):
-    bucket = storage_client.get_bucket(bucket_name)
-    blob = bucket.blob(file_name)
-    blob.upload_from_filename(parquet_file)
+    storage = CloudStorageUtils()
+    storage.save_data_to_cloud_storage(bucket_name='twitter_scraped_data',
+                                       file_name=f'{postgres_table}/{last_tweeted_at}.pq',
+                                       parquet_file=f'/tmp/{postgres_table}_{last_tweeted_at}.pq')
+    storage.set_fingerprint_for_user(bucket_name='twitter_scraped_data',
+                                     file_name=f'{postgres_table}/fingerprint.csv',
+                                     fingerprint=last_tweeted_at)
 
 
 def handler(request):
