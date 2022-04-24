@@ -20,16 +20,23 @@ user_tables = {
 def main(user: str = 'elonmusk', scraping_type: str = 'news'):
     postgres_engine = connect_database_sqlalchemy(database='twitter')
     user_models.get(user).metadata.create_all(postgres_engine)
+    storage = CloudStorageUtils()
+    postgres_table = user_tables.get(user)
+
     with Session(postgres_engine) as session:
         if scraping_type == 'news':
-            scraper = TwitterNewsScraper(user=user, database_session=session)
+            fingerprint = storage.get_fingerprint_for_user(
+                bucket_name='twitter_scraped_data',
+                file_name=f'{postgres_table}/fingerprint.csv'
+            )
+            scraper = TwitterNewsScraper(user=user, database_session=session, last_scraped_tweet=fingerprint)
             batch = scraper.scraping_data_news()
         else:
             scraper = TwitterHistoryScraper(user=user, database_session=session)
             batch = scraper.set_query_for_history_scraper()
 
     last_tweeted_at = scraper.load_scraped_data(engine=postgres_engine, scraped_batch=batch)
-    postgres_table = user_tables.get(user)
+
     user_df = pd.read_sql(
         f"""
         select * from {postgres_table}
@@ -38,7 +45,6 @@ def main(user: str = 'elonmusk', scraping_type: str = 'news'):
     )
 
     user_df.to_parquet(path=f'/tmp/{postgres_table}_{last_tweeted_at}.pq', compression='snappy')
-    storage = CloudStorageUtils()
     storage.save_data_to_cloud_storage(bucket_name='twitter_scraped_data',
                                        file_name=f'{postgres_table}/{last_tweeted_at}.pq',
                                        parquet_file=f'/tmp/{postgres_table}_{last_tweeted_at}.pq')

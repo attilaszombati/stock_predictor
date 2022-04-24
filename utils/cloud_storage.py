@@ -18,3 +18,8 @@ class CloudStorageUtils:
         blob = bucket.blob(file_name)
         blob.upload_from_string(data=fingerprint)
 
+    def get_fingerprint_for_user(self, bucket_name: str, file_name: str) -> str:
+        bucket = self.storage_client.get_bucket(bucket_name)
+        blob = bucket.blob(file_name)
+        return blob.download_as_text()
+

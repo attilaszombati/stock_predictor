@@ -16,7 +16,7 @@ from orm.models import (
     TwitterDataModelKamalaHarris,
 )
 from scraper.context import connect_database_sqlalchemy
-from scraper.custom_exceptions import UserModelNotFound
+from scraper.custom_exceptions import UserModelNotFound, NewsScraperMissConfigured
 
 user_models = {
     'elonmusk': TwitterDataModelElonMusk,
@@ -115,27 +115,27 @@ class TwitterScraperBase:
 
 
 class TwitterNewsScraper(TwitterScraperBase):
-    def __init__(self, user: str, database_session: Session):
+    def __init__(self, user: str, database_session: Session, last_scraped_tweet: str):
         super().__init__(user, database_session)
+        self.last_scraped_tweet = datetime.fromisoformat(last_scraped_tweet)
 
     def set_query_time_from_last_scraped(self):
-        last_record_time = self.get_last_scraped_tweet.tweeted_at
-        scraper_time = int(last_record_time.timestamp()) + 1
+        scraper_time = int(self.last_scraped_tweet.timestamp()) + 7201
         self.query_time = f'since_time:{scraper_time}'
-        logger.warning(f'New tweets for the user : {self.user} will be scraped from : {last_record_time}')
+        logger.warning(f'New tweets for the user : {self.user} will be scraped from : {self.last_scraped_tweet}')
         return self.query_time
 
-    def scraping_data_news(self, until_day=3):
-        if self.get_newest_scraped_tweet:
+    def scraping_data_news(self, until_day=1):
+        if self.last_scraped_tweet:
             since_time = self.set_query_time_from_last_scraped()
         else:
-            scraper_time = self.since_time_int
-            since_time = f'since_time:{scraper_time}'
+            raise NewsScraperMissConfigured(f"Check the fingerprint file for the user : {self.user}")
 
         day_in_timestamp = 86400
         until_time = int(time.time() - (day_in_timestamp * until_day))
         logger.warning(f'until_time : {datetime.utcfromtimestamp(until_time).strftime("%Y-%m-%d %H:%M:%S")}')
         query = f'from:{self.user} {since_time} until_time:{until_time}'
+        logger.warning(f'The search query is : {query}')
         yield from self.start_scraping(query)
 
 
@@ -155,9 +155,11 @@ class TwitterHistoryScraper(TwitterScraperBase):
             scraper_time = self.set_query_time_until_last_scraped()
         else:
             scraper_time = self.since_time_str
-            logger.warning(f'{self.user} will be scraped from the far far away until now')
+            logger.warning(f'{self.user} will be scraped from the far far away until last day')
 
-        query = f'from:{self.user} {scraper_time[:-2]}'
+        day_in_timestamp = 86400
+        until_time = int(time.time() - (day_in_timestamp * 3))
+        query = f'from:{self.user} {scraper_time[:-2]} until_time:{until_time}'
         logger.warning(f'The search query is : {query}')
         yield from self.start_scraping(query)
 
@@ -173,12 +175,13 @@ def scraping_data_from_hashtag():
 
 if __name__ == '__main__':
     postgres_engine: Engine = connect_database_sqlalchemy(database='twitter')
-    scraping_type = 'history'
-    twitter_user = 'elonmusk'
+    scraping_type = 'news'
+    twitter_user = 'JoeBiden'
     user_models.get(twitter_user).metadata.create_all(postgres_engine)
     with Session(postgres_engine) as session:
         if scraping_type == 'news':
-            scraper = TwitterNewsScraper(user=twitter_user, database_session=session)
+            scraper = TwitterNewsScraper(user=twitter_user, database_session=session,
+                                         last_scraped_tweet='2022-04-21-18:28:01')
             batch = scraper.scraping_data_news()
         else:
             scraper = TwitterHistoryScraper(user=twitter_user, database_session=session)
