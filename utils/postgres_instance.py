@@ -23,7 +23,10 @@ def update_postgres_instance_status(request):
     status = request_json.get('status', 'ALWAYS')
     BODY['settings']['activationPolicy'] = status
 
-    cred = ServiceAccountCredentials.from_json_keyfile_dict(keyfile_dict=os.getenv(''))
+    print(os.getenv('GCLOUD_SERVICE_KEY'))
+    secret_dict = {k: os.environ.get(v) for k, v in os.getenv('GCLOUD_SERVICE_KEY').items()}
+
+    cred = ServiceAccountCredentials.from_json_keyfile_dict(keyfile_dict=secret_dict)
 
     service = discovery.build('sqladmin', 'v1', credentials=cred)
 
