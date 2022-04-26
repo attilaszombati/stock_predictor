@@ -33,5 +33,4 @@ def update_postgres_instance_status(request):
     req = service.instances().patch(project=project, instance=instance, body=BODY)
     resp = req.execute()
     pprint(resp)
-    request_json = resp.get_json()
-    return {'operation_type': request_json["operationType"]}
+    return {'operation_type': resp["operationType"]}
