@@ -33,4 +33,4 @@ def update_postgres_instance_status(request):
     req = service.instances().patch(project=project, instance=instance, body=BODY)
     resp = req.execute()
     pprint(resp)
-    return {"OK": 200}
+    return "OK"
