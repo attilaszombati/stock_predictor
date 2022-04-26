@@ -53,4 +53,4 @@ jobs:
           echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account --key-file=-
           gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
           gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
-          echo $GCLOUD_SERVICE_KEY | gcloud functions deploy postgres-handler --entry-point handler_postgres --runtime python39 --trigger-http --timeout 60 --set-env-vars GCLOUD_SERVICE_KEY=- --verbosity=debug
+          gcloud functions deploy postgres-handler --entry-point handler_postgres --runtime python39 --trigger-http --timeout 60 --verbosity=debug

@@ -1,9 +1,8 @@
 import json
-import os
 from pprint import pprint
 
 from googleapiclient import discovery
-from oauth2client.service_account import ServiceAccountCredentials
+from oauth2client.client import GoogleCredentials
 
 BODY = {
     "settings":
@@ -23,18 +22,15 @@ def update_postgres_instance_status(request):
     status = request_json.get('status', 'ALWAYS')
     BODY['settings']['activationPolicy'] = status
 
-    print(os.getenv('GCLOUD_SERVICE_KEY'))
-    secret_dict = {k: os.environ.get(v) for k, v in os.getenv('GCLOUD_SERVICE_KEY').items()}
+    credentials = GoogleCredentials.get_application_default()
 
-    cred = ServiceAccountCredentials.from_json_keyfile_dict(keyfile_dict=secret_dict)
-
-    service = discovery.build('sqladmin', 'v1', credentials=cred)
+    service = discovery.build('sqladmin', 'v1', credentials=credentials)
 
     project = 'crawling-315317'
 
     instance = 'postgres3'
 
-    req = service.instances().patch(project=project, instance=instance, body=BODY)
+    req = service.instances().update(project=project, instance=instance, body=BODY)
     resp = req.execute()
     pprint(resp)
     return {'done': 1}
