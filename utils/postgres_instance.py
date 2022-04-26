@@ -30,7 +30,7 @@ def update_postgres_instance_status(request):
 
     instance = 'postgres3'
 
-    req = service.instances().update(project=project, instance=instance, body=BODY)
+    req = service.instances().patch(project=project, instance=instance, body=BODY)
     resp = req.execute()
     pprint(resp)
     return {'done': 1}
