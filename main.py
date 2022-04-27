@@ -63,7 +63,14 @@ def handler(request):
         return "JSON Error", 400
     users = request_json.get('TWITTER_USERS', [])
     scraping_type = request_json.get('SCRAPING_TYPE', 'since')
+    print("Y" * 50)
+    print(users)
+    print("Y" * 50)
     for user in users:
+        print("X" * 50)
+        print(user)
+        print("X" * 50)
+        print("X" * 50)
         main(user=user, scraping_type=scraping_type)
     return {'done': 1}
 
