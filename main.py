@@ -61,9 +61,10 @@ def handler(request):
     except ValueError as json_error:
         print(f"Error decoding JSON: {json_error}")
         return "JSON Error", 400
-    users = request_json.get('TWITTER_USER', '')
+    users = request_json.get('TWITTER_USERS', [])
     scraping_type = request_json.get('SCRAPING_TYPE', 'since')
-    main(user=users, scraping_type=scraping_type)
+    for user in users:
+        main(user=user, scraping_type=scraping_type)
     return {'done': 1}
 
 
