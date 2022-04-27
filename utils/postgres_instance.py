@@ -20,6 +20,9 @@ def update_postgres_instance_status(request):
         print(f"Error decoding JSON: {json_error}")
         return "JSON Error", 400
     status = request_json.get('status', 'ALWAYS')
+    print("X" * 50)
+    print(status)
+    print("X" * 50)
     BODY['settings']['activationPolicy'] = status
 
     credentials = GoogleCredentials.get_application_default()
