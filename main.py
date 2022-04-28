@@ -36,14 +36,17 @@ def main(user: str = 'elonmusk', scraping_type: str = 'news'):
             scraper = TwitterHistoryScraper(user=user, database_session=session)
             batch = scraper.set_query_for_history_scraper()
 
-    last_tweeted_at = scraper.load_scraped_data(engine=postgres_engine, scraped_batch=batch)
+        last_tweeted_at = scraper.load_scraped_data(engine=postgres_engine, scraped_batch=batch)
 
-    user_df = pd.read_sql(
-        f"""
-        select * from {postgres_table}
-        """,
-        postgres_engine
-    )
+        user_df = pd.read_sql(
+            f"""
+            select * from {postgres_table}
+            """,
+            postgres_engine
+        )
+
+        session.execute(f"""TRUNCATE TABLE {postgres_table}""")
+        session.commit()
 
     user_df.to_parquet(path=f'/tmp/{postgres_table}_{last_tweeted_at}.pq', compression='snappy')
     storage.save_data_to_cloud_storage(bucket_name='twitter_scraped_data',
