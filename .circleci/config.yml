@@ -54,4 +54,8 @@ jobs:
           gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
           gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
           gcloud functions deploy postgres-handler --entry-point handler_postgres --runtime python39 --trigger-http --timeout 60 --verbosity=debug
-          gcloud functions deploy twitter-scraper --region ${GOOGLE_COMPUTE_ZONE} --entry-point handler --runtime python39 --trigger-http --timeout 540 --set-env-vars RUNTIME=cloud,DB_NAME=twitter,DB_USER=postgres,GOOGLE_PROJECT_ID=${GOOGLE_PROJECT_ID} --verbosity=debug
+      - run: |
+          echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account --key-file=-
+          gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
+          gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
+          gcloud functions deploy twitter-scraper --region ${GOOGLE_COMPUTE_ZONE} --entry-point handler --runtime python39 --trigger-http --timeout 540 --set-env-vars RUNTIME=cloud,DB_NAME=twitter,DB_USER=postgres,GOOGLE_PROJECT_ID=${GOOGLE_PROJECT_ID} --verbosity=debug          
