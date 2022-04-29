@@ -109,7 +109,10 @@ class TwitterScraperBase:
                 sess.add(fixture)
                 sess.commit()
 
-        return str(self.get_newest_scraped_tweet().tweeted_at).replace(" ", "-")
+        last_scraped = self.get_newest_scraped_tweet()
+        if last_scraped is None:
+            return None
+        return str(last_scraped.tweeted_at).replace(" ", "-")
 
 
 class TwitterNewsScraper(TwitterScraperBase):
@@ -179,7 +182,7 @@ if __name__ == '__main__':
     with Session(postgres_engine) as session:
         if scraping_type == 'news':
             scraper = TwitterNewsScraper(user=twitter_user, database_session=session,
-                                         last_scraped_tweet='2022-04-23-20:30:01')
+                                         last_scraped_tweet='2022-04-22 17:06:01')
             batch = scraper.scraping_data_news()
         else:
             scraper = TwitterHistoryScraper(user=twitter_user, database_session=session)
@@ -187,10 +190,12 @@ if __name__ == '__main__':
 
     last_tweeted_at = scraper.load_scraped_data(engine=postgres_engine, scraped_batch=batch)
     df = pd.read_sql(
-        """
-        select * from elon_musk
+        f"""
+        select * from {twitter_user}
         """,
         postgres_engine
     )
+    session.execute(f"""TRUNCATE TABLE {twitter_user}""")
+    session.commit()
 
     df.to_parquet(path=f'{twitter_user}_{last_tweeted_at}.pq', compression='snappy')
