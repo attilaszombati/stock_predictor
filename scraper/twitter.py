@@ -149,7 +149,7 @@ class TwitterHistoryScraper(TwitterScraperBase):
         return self.query_time
 
     def set_query_for_history_scraper(self):
-        if self.get_last_scraped_tweet:
+        if self.get_last_scraped_tweet():
             scraper_time = self.set_query_time_until_last_scraped()
         else:
             scraper_time = self.since_time_str
