@@ -43,11 +43,9 @@ class TwitterScraperBase:
         if self.user not in user_models:
             raise UserModelNotFound(self.user)
 
-    @property
     def get_last_scraped_tweet(self):
         return user_models.get(self.user).get_oldest_tweeted_at_elem(session=self.session)
 
-    @property
     def get_newest_scraped_tweet(self):
         return user_models.get(self.user).get_newest_tweeted_at_elem(session=self.session)
 
@@ -111,7 +109,7 @@ class TwitterScraperBase:
                 sess.add(fixture)
                 sess.commit()
 
-        return str(self.get_newest_scraped_tweet.tweeted_at).replace(" ", "-")
+        return str(self.get_newest_scraped_tweet().tweeted_at).replace(" ", "-")
 
 
 class TwitterNewsScraper(TwitterScraperBase):
@@ -145,7 +143,7 @@ class TwitterHistoryScraper(TwitterScraperBase):
         super().__init__(user, database_session)
 
     def set_query_time_until_last_scraped(self):
-        last_record_time = self.get_last_scraped_tweet.tweeted_at
+        last_record_time = self.get_last_scraped_tweet().tweeted_at
         logger.warning(f'{self.user} will be scraped from the far far away until: {last_record_time}')
         self.query_time = f'until_time:{last_record_time.timestamp()}'
         return self.query_time
