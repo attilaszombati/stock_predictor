@@ -77,7 +77,7 @@ class TwitterScraperBase:
     @staticmethod
     def check_outlinks(data):
         if data is not None:
-            return ''.join(link for link in data)
+            return ','.join(link for link in data)
         return data
 
     def create_models_from_scraping(self, scraping_batch):
