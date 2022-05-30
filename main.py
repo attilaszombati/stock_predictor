@@ -45,9 +45,6 @@ def main(user: str = 'elonmusk', scraping_type: str = 'news'):
             postgres_engine
         )
 
-        session.execute(f"""TRUNCATE TABLE {postgres_table}""")
-        session.commit()
-
     if last_tweeted_at:
         user_df.to_parquet(path=f'/tmp/{postgres_table}_{last_tweeted_at}.pq', compression='snappy')
         storage.save_data_to_cloud_storage(bucket_name='twitter_scraped_data',
