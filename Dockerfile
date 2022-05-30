@@ -17,7 +17,6 @@ COPY scraper scraper
 COPY tests tests
 ENV PATH=/root/.local/bin:$PATH
 ENV PYTHONPATH=$PYTHONPATH:/srv
-ENV RUNTIME=cloud
 EXPOSE 8080
 
 CMD ["python3", "./scraper/twitter.py"]

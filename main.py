@@ -19,7 +19,7 @@ user_tables = {
 
 
 def main(user: str = 'elonmusk', scraping_type: str = 'news'):
-    postgres_engine = connect_database_sqlalchemy(database='twitter')
+    postgres_engine = connect_database_sqlalchemy()
     user_models.get(user).metadata.create_all(postgres_engine)
     storage = CloudStorageUtils()
     postgres_table = user_tables.get(user)

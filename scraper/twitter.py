@@ -53,6 +53,7 @@ class TwitterScraperBase:
     def start_scraping(query):
         tweets = sntwitter.TwitterSearchScraper(query).get_items()
         for tweet in tweets:
+            print(tweet.__dict__)
             yield tweet
 
     @staticmethod
@@ -73,6 +74,12 @@ class TwitterScraperBase:
             return str(data.username)
         return data
 
+    @staticmethod
+    def check_outlinks(data):
+        if data is not None:
+            return ''.join(link for link in data)
+        return data
+
     def create_models_from_scraping(self, scraping_batch):
         yield from (
             user_models.get(self.user)(
@@ -88,7 +95,7 @@ class TwitterScraperBase:
                 language=data.lang,
                 like_count=data.likeCount,
                 mentioned_users=self.check_mentioned(data.mentionedUsers),
-                outlinks=data.outlinks,
+                outlinks=self.check_outlinks(data.outlinks),
                 place=data.place,
                 quote_count=data.quoteCount,
                 quoted_tweet=self.check_quoted_tweet(data.quotedTweet),
@@ -175,7 +182,7 @@ def scraping_data_from_hashtag():
 
 
 if __name__ == '__main__':
-    postgres_engine: Engine = connect_database_sqlalchemy(database='twitter')
+    postgres_engine: Engine = connect_database_sqlalchemy()
     scraping_type = 'news'
     twitter_user = 'JoeBiden'
     user_models.get(twitter_user).metadata.create_all(postgres_engine)
@@ -190,12 +197,10 @@ if __name__ == '__main__':
 
     last_tweeted_at = scraper.load_scraped_data(engine=postgres_engine, scraped_batch=batch)
     df = pd.read_sql(
-        f"""
-        select * from {twitter_user}
+        """
+        select * from joe_biden
         """,
         postgres_engine
     )
-    session.execute(f"""TRUNCATE TABLE {twitter_user}""")
-    session.commit()
 
     df.to_parquet(path=f'{twitter_user}_{last_tweeted_at}.pq', compression='snappy')
