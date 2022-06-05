@@ -32,7 +32,7 @@ workflows:
 
   sample:
     jobs:
-      - build-and-test
+      - python-test
       - request-deploy:
             type: approval
             requires:
