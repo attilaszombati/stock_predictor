@@ -22,7 +22,7 @@ def connect_database_sqlalchemy(
                 database=os.getenv('DB_NAME'),
                 query={
                     "unix_sock": f"/cloudsql/{str(os.getenv('GOOGLE_PROJECT_ID', 'crawling-315317'))}"
-                                 f":europe-west1:postgres3/.s.PGSQL.5432"
+                                 f":us-central1:postgres3/.s.PGSQL.5432"
                 }
             ),
         )
