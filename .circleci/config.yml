@@ -37,9 +37,6 @@ workflows:
             type: approval
             requires:
               - build-and-test
-      - deploy:
-          requires:
-            - request-deploy
 
 jobs:
   python-test:
