@@ -43,11 +43,9 @@ class TwitterScraperBase:
         if self.user not in user_models:
             raise UserModelNotFound(self.user)
 
-    @property
     def get_last_scraped_tweet(self):
         return user_models.get(self.user).get_oldest_tweeted_at_elem(session=self.session)
 
-    @property
     def get_newest_scraped_tweet(self):
         return user_models.get(self.user).get_newest_tweeted_at_elem(session=self.session)
 
@@ -55,6 +53,7 @@ class TwitterScraperBase:
     def start_scraping(query):
         tweets = sntwitter.TwitterSearchScraper(query).get_items()
         for tweet in tweets:
+            print(tweet.__dict__)
             yield tweet
 
     @staticmethod
@@ -75,6 +74,12 @@ class TwitterScraperBase:
             return str(data.username)
         return data
 
+    @staticmethod
+    def check_outlinks(data):
+        if data is not None:
+            return ','.join(link for link in data)
+        return data
+
     def create_models_from_scraping(self, scraping_batch):
         yield from (
             user_models.get(self.user)(
@@ -90,7 +95,7 @@ class TwitterScraperBase:
                 language=data.lang,
                 like_count=data.likeCount,
                 mentioned_users=self.check_mentioned(data.mentionedUsers),
-                outlinks=data.outlinks,
+                outlinks=self.check_outlinks(data.outlinks),
                 place=data.place,
                 quote_count=data.quoteCount,
                 quoted_tweet=self.check_quoted_tweet(data.quotedTweet),
@@ -111,7 +116,10 @@ class TwitterScraperBase:
                 sess.add(fixture)
                 sess.commit()
 
-        return str(self.get_newest_scraped_tweet.tweeted_at).replace(" ", "-")
+        last_scraped = self.get_newest_scraped_tweet()
+        if last_scraped is None:
+            return None
+        return str(last_scraped.tweeted_at).replace(" ", "-")
 
 
 class TwitterNewsScraper(TwitterScraperBase):
@@ -145,13 +153,13 @@ class TwitterHistoryScraper(TwitterScraperBase):
         super().__init__(user, database_session)
 
     def set_query_time_until_last_scraped(self):
-        last_record_time = self.get_last_scraped_tweet.tweeted_at
+        last_record_time = self.get_last_scraped_tweet().tweeted_at
         logger.warning(f'{self.user} will be scraped from the far far away until: {last_record_time}')
         self.query_time = f'until_time:{last_record_time.timestamp()}'
         return self.query_time
 
     def set_query_for_history_scraper(self):
-        if self.get_last_scraped_tweet:
+        if self.get_last_scraped_tweet():
             scraper_time = self.set_query_time_until_last_scraped()
         else:
             scraper_time = self.since_time_str
@@ -174,14 +182,14 @@ def scraping_data_from_hashtag():
 
 
 if __name__ == '__main__':
-    postgres_engine: Engine = connect_database_sqlalchemy(database='twitter')
+    postgres_engine: Engine = connect_database_sqlalchemy()
     scraping_type = 'news'
     twitter_user = 'JoeBiden'
     user_models.get(twitter_user).metadata.create_all(postgres_engine)
     with Session(postgres_engine) as session:
         if scraping_type == 'news':
             scraper = TwitterNewsScraper(user=twitter_user, database_session=session,
-                                         last_scraped_tweet='2022-04-23-20:30:01')
+                                         last_scraped_tweet='2022-04-22 17:06:01')
             batch = scraper.scraping_data_news()
         else:
             scraper = TwitterHistoryScraper(user=twitter_user, database_session=session)
@@ -190,7 +198,7 @@ if __name__ == '__main__':
     last_tweeted_at = scraper.load_scraped_data(engine=postgres_engine, scraped_batch=batch)
     df = pd.read_sql(
         """
-        select * from elon_musk
+        select * from joe_biden
         """,
         postgres_engine
     )

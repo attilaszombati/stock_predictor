@@ -70,7 +70,7 @@ def load_scraped_data(engine: Engine):
 
 
 if __name__ == '__main__':
-    postgres_engine: Engine = connect_database_sqlalchemy(database='reddit')
+    postgres_engine: Engine = connect_database_sqlalchemy()
     load_scraped_data(engine=postgres_engine)
 
     last_tweeted_at = load_scraped_data(engine=postgres_engine)

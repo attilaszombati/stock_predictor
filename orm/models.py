@@ -1,8 +1,8 @@
 import logging
 
-from sqlalchemy import Column, Integer, String, DateTime, func, BigInteger
+from sqlalchemy import Column, Integer, func
 from sqlalchemy import select
-from sqlalchemy.dialects.postgresql import INTEGER, BIGINT
+from sqlalchemy.dialects.sqlite import INTEGER, VARCHAR, DATETIME
 from sqlalchemy.orm import declarative_base, Session
 
 logger = logging.getLogger(__name__)
@@ -13,30 +13,30 @@ Base = declarative_base()
 class TwitterBaseModel(Base):
     __abstract__ = True
 
-    id = Column(BIGINT(), primary_key=True, index=True, autoincrement=True)
-    cashtags = Column(String(1000), index=True, nullable=True)
-    content = Column(String(1000))
-    conversation_id = Column(BigInteger())
-    coordinates = Column(String(1000), nullable=True)
-    tweeted_at = Column(DateTime)
-    hashtags = Column(String(1000), nullable=True)
-    in_reply_to_tweet_id = Column(BigInteger(), nullable=True)
-    in_reply_to_user = Column(String(1000), nullable=True)
-    language = Column(String(1000))
-    like_count = Column(BigInteger(), nullable=True)
-    mentioned_users = Column(String(1000))
-    outlinks = Column(String(1000), nullable=True)
-    place = Column(String(1000), nullable=True)
-    quote_count = Column(BigInteger())
-    quoted_tweet = Column(String(1000), nullable=True)
-    reply_count = Column(BigInteger(), nullable=True)
-    retweet_count = Column(BigInteger(), nullable=True)
-    retweeted_tweet = Column(String(1000), nullable=True)
-    source = Column(String(1000))
-    source_url = Column(String(1000))
-    url = Column(String(1000))
-    user_name = Column(String(1000))
-    created_at = Column(DateTime, server_default=func.now())
+    id = Column(INTEGER(), primary_key=True, index=True, autoincrement=True)
+    cashtags = Column(VARCHAR(1000), index=True, nullable=True)
+    content = Column(VARCHAR(1000))
+    conversation_id = Column(INTEGER())
+    coordinates = Column(VARCHAR(1000), nullable=True)
+    tweeted_at = Column(DATETIME)
+    hashtags = Column(VARCHAR(1000), nullable=True)
+    in_reply_to_tweet_id = Column(INTEGER(), nullable=True)
+    in_reply_to_user = Column(VARCHAR(1000), nullable=True)
+    language = Column(VARCHAR(1000))
+    like_count = Column(INTEGER(), nullable=True)
+    mentioned_users = Column(VARCHAR(1000))
+    outlinks = Column(VARCHAR(1000), nullable=True)
+    place = Column(VARCHAR(1000), nullable=True)
+    quote_count = Column(INTEGER())
+    quoted_tweet = Column(VARCHAR(1000), nullable=True)
+    reply_count = Column(INTEGER(), nullable=True)
+    retweet_count = Column(INTEGER(), nullable=True)
+    retweeted_tweet = Column(VARCHAR(1000), nullable=True)
+    source = Column(VARCHAR(1000))
+    source_url = Column(VARCHAR(1000))
+    url = Column(VARCHAR(1000))
+    user_name = Column(VARCHAR(1000))
+    created_at = Column(DATETIME, server_default=func.now())
 
     __mapper_args__ = {'eager_defaults': True}
 
@@ -81,14 +81,14 @@ class RedditDataModel(Base):
     __tablename__ = 'wallstreetbets'
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    author = Column(String(1000), nullable=True)
-    posted_at = Column(DateTime)
+    author = Column(VARCHAR(1000), nullable=True)
+    posted_at = Column(DATETIME)
     post_id = Column(INTEGER, nullable=False)
-    self_text = Column(String(1000), nullable=True)
-    subreddit = Column(String(1000))
-    url = Column(String(1000))
-    created_at = Column(DateTime, server_default=func.now())
-    title = Column(String(1000))
+    self_text = Column(VARCHAR(1000), nullable=True)
+    subreddit = Column(VARCHAR(1000))
+    url = Column(VARCHAR(1000))
+    created_at = Column(DATETIME, server_default=func.now())
+    title = Column(VARCHAR(1000))
 
     @classmethod
     def get_newest_reddit_elem(cls, session: Session):
@@ -111,19 +111,19 @@ class RedditOfficialApiModel(Base):
     __tablename__ = 'wallstreetbets_official_api'
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    author = Column(String(1000), nullable=True)
-    title = Column(String(1000))
+    author = Column(VARCHAR(1000), nullable=True)
+    title = Column(VARCHAR(1000))
     score = Column(INTEGER, nullable=False)
     num_comments = Column(INTEGER, nullable=False)
-    self_text = Column(String(1000), nullable=True)
-    posted_at = Column(DateTime)
+    self_text = Column(VARCHAR(1000), nullable=True)
+    posted_at = Column(DATETIME)
     total_awards_received = Column(INTEGER, nullable=False)
-    scraped_at = Column(DateTime, server_default=func.now())
-    view_count = Column(String(1000), nullable=True)
+    scraped_at = Column(DATETIME, server_default=func.now())
+    view_count = Column(VARCHAR(1000), nullable=True)
     post_id = Column(INTEGER, nullable=False)
-    subreddit = Column(String(1000))
+    subreddit = Column(VARCHAR(1000))
     subreddit_id = Column(INTEGER, nullable=False)
-    url = Column(String(1000))
+    url = Column(VARCHAR(1000))
     # upvote = IntegerField()
     # upvote_ratio = IntegerField()
 
