@@ -43,6 +43,8 @@ workflows:
 
 jobs:
   python-test:
+    docker:
+      - image: cimg/python:3.8
     steps:
       - checkout
       - python/install-packages:
