@@ -33,10 +33,6 @@ workflows:
   sample:
     jobs:
       - python-test
-      - request-deploy:
-            type: approval
-            requires:
-              - build-and-test
 
 jobs:
   python-test:
