@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  terraform: "circleci/terraform@1.1.0"
+  terraform: circleci/terraform@1.1.0
   python: circleci/python@1.2
 
 workflows:
@@ -42,9 +42,7 @@ workflows:
             - request-deploy
 
 jobs:
-  build-and-test:
-    docker:
-      - image: cimg/python:3.8
+  python-test:
     steps:
       - checkout
       - python/install-packages:
@@ -52,13 +50,13 @@ jobs:
       - run:
           name: Run tests
           command: chmod 777 test.sh && export PYTHONPATH=$PYTHONPATH:/stock_predictor && ./test.sh
-  deploy:
-    docker:
-      - image: google/cloud-sdk
-    steps:
-      - checkout
-      - run: |
-          echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account --key-file=-
-          gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
-          gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
-          gcloud functions deploy twitter-scraper --region ${GOOGLE_COMPUTE_ZONE} --entry-point handler --runtime python39 --memory 512 --trigger-http --timeout 540 --set-env-vars RUNTIME=cloud,DB_NAME=twitter,DB_USER=postgres,GOOGLE_PROJECT_ID=${GOOGLE_PROJECT_ID} --verbosity=debug
+  # deploy:
+  #   docker:
+  #     - image: google/cloud-sdk
+  #   steps:
+  #     - checkout
+  #     - run: |
+  #         echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account --key-file=-
+  #         gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
+  #         gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
+  #         gcloud functions deploy twitter-scraper --region ${GOOGLE_COMPUTE_ZONE} --entry-point handler --runtime python39 --memory 512 --trigger-http --timeout 540 --set-env-vars RUNTIME=cloud,DB_NAME=twitter,DB_USER=postgres,GOOGLE_PROJECT_ID=${GOOGLE_PROJECT_ID} --verbosity=debug

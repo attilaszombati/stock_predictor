@@ -4,3 +4,4 @@ __pycache__/
 *.pq
 *.pyc
 .terraform
+attila-szombati-sandbox*.json
