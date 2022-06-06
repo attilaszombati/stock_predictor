@@ -9,30 +9,7 @@ orbs:
 workflows:
   deploy_infrastructure:
     jobs:
-      - build_push_image_cloud_run_mangaged:
-        docker:
-          - image: circleci/python:3.7.4
-        steps:
-          - checkout
-          - setup_remote_docker:
-              docker_layer_caching: false
-          - run:
-              name: Build app binary and Docker image
-              command: ./cloud_function/build-image.sh
-          - gcp-gcr/gcr-auth:
-              gcloud-service-key: GOOGLE_CLOUD_KEYS
-              google-project-id: GOOGLE_PROJECT_ID
-              google-compute-zone: GOOGLE_COMPUTE_ZONE
-          - gcp-gcr/push-image:
-              google-project-id: GOOGLE_PROJECT_ID
-              registry-url: "gcr.io"
-              image: $IMAGE_NAME
-          - cloudrun/deploy:
-              platform: "managed"
-              image: "gcr.io/attila-szombati-sandbox/twitter-scraper"
-              service-name: "orb-gcp-cloud-run"
-              region: $GOOGLE_COMPUTE_ZONE
-              unauthenticated: true
+      - build_push_image_cloud_run_mangaged
       - terraform/fmt:
           checkout: true
           context: terraform
@@ -73,6 +50,31 @@ jobs:
       - run:
           name: Run tests
           command: export PYTHONPATH=$PYTHONPATH:/cloud_function && ./cloud_function/test.sh
+
+  build_push_image_cloud_run_mangaged:
+    docker:
+      - image: circleci/python:3.7.4
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: false
+      - run:
+          name: Build app binary and Docker image
+          command: ./cloud_function/build-image.sh
+      - gcp-gcr/gcr-auth:
+          gcloud-service-key: GOOGLE_CLOUD_KEYS
+          google-project-id: GOOGLE_PROJECT_ID
+          google-compute-zone: GOOGLE_COMPUTE_ZONE
+      - gcp-gcr/push-image:
+          google-project-id: GOOGLE_PROJECT_ID
+          registry-url: "gcr.io"
+          image: $IMAGE_NAME
+      - cloudrun/deploy:
+          platform: "managed"
+          image: "gcr.io/attila-szombati-sandbox/twitter-scraper"
+          service-name: "orb-gcp-cloud-run"
+          region: $GOOGLE_COMPUTE_ZONE
+          unauthenticated: true
 
   # deploy:
   #   docker:
