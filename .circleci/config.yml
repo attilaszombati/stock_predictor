@@ -56,6 +56,7 @@ jobs:
       - checkout
       - gcp-gcr/gcr-auth
       - gcp-gcr/build-image:
+          context: ./cloud_function
           image: orb-test
           no_output_timeout: 20m
           registry-url: eu.gcr.io
