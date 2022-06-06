@@ -46,7 +46,7 @@ jobs:
           command: pip install -r cloud_function/requirements.txt
       - run:
           name: Run tests
-          command: chmod 777 test.sh && export PYTHONPATH=$PYTHONPATH:/cloud_function && ./test.sh
+          command: chmod 777 test.sh && export PYTHONPATH=$PYTHONPATH:/cloud_function && ./cloud_function/test.sh
 
   # deploy:
   #   docker:
