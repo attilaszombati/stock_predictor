@@ -3,7 +3,7 @@
 echo 'export PATH=~$PATH:~/.local/bin' >>$BASH_ENV
 echo ${GCP_PROJECT_KEY} | base64 --decode --ignore-garbage >$HOME/gcloud-service-key.json
 echo 'export GOOGLE_CLOUD_KEYS=$(cat $HOME/gcloud-service-key.json)' >>$BASH_ENV
-echo 'export TAG=${CIRCLE_SHA1}' >> $BASH_ENV
-echo 'export LATEST_TAG=latest' >> $BASH_ENV
+echo 'export TAG=${CIRCLE_SHA1}' >>$BASH_ENV
+echo 'export LATEST_TAG=latest' >>$BASH_ENV
 echo 'export IMAGE_NAME=twitter-scraper' >>$BASH_ENV && source $BASH_ENV
-docker build -t gcr.io/attila-szombati-sandbox/twitter-scraper:latest -t gcr.io/attila-szombati-sandbox/twitter-scraper:$TAG ./cloud_function
+docker build -t gcr.io/attila-szombati-sandbox/twitter-scraper:latest -t gcr.io/attila-szombati-sandbox/twitter-scraper:$CIRCLE_SHA1 ./cloud_function
