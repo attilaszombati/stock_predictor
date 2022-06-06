@@ -36,6 +36,7 @@ workflows:
   code-validation:
     jobs:
       - python-test
+  build-and-push:
       - build_push_image_cloud_run_mangaged
 
 jobs:
@@ -52,7 +53,6 @@ jobs:
           command: export PYTHONPATH=$PYTHONPATH:/cloud_function && ./cloud_function/test.sh
 
   build_push_image_cloud_run_mangaged:
-    context: terraform
     docker:
       - image: circleci/python:3.7.4
     steps:
@@ -60,6 +60,7 @@ jobs:
       - setup_remote_docker:
           docker_layer_caching: false
       - run:
+          context: terraform
           name: Build app binary and Docker image
           command: ./cloud_function/build-image.sh
       - gcp-gcr/gcr-auth:
