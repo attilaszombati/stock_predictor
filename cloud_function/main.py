@@ -4,10 +4,10 @@ import json
 import pandas as pd
 from sqlalchemy.orm import Session
 
-from scraper.context import connect_database_sqlalchemy
-from scraper.twitter import user_models, TwitterNewsScraper, TwitterHistoryScraper
-from utils.cloud_storage import CloudStorageUtils
-from utils.postgres_instance import update_postgres_instance_status
+from cloud_function.scraper.context import connect_database_sqlalchemy
+from cloud_function.scraper.twitter import user_models, TwitterNewsScraper, TwitterHistoryScraper
+from cloud_function.utils.cloud_storage import CloudStorageUtils
+from cloud_function.utils.postgres_instance import update_postgres_instance_status
 
 user_tables = {
     'elonmusk': "elon_musk",

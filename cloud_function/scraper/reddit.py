@@ -1,7 +1,7 @@
 # pylint:disable=import-error, missing-function-docstring, missing-module-docstring
 import snscrape.modules.reddit as snreddit
 
-from orm.models import RedditDataModel
+from cloud_function.orm import RedditDataModel
 
 
 def scraping_data():
