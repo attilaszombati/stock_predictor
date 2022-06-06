@@ -9,7 +9,7 @@ orbs:
 workflows:
   deploy_infrastructure:
     jobs:
-      build_push_image_cloud_run_mangaged:
+      - build_push_image_cloud_run_mangaged:
         docker:
           - image: circleci/python:3.7.4
         steps:
