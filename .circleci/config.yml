@@ -29,7 +29,7 @@ workflows:
           attach-workspace: true
           context: terraform
           requires:
-            - terraform/plan
+            - request-deploy
 
   sample:
     jobs:
