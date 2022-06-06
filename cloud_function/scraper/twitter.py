@@ -5,9 +5,6 @@ from datetime import datetime
 
 import pandas as pd
 import snscrape.modules.twitter as sntwitter
-from sqlalchemy.engine import Engine
-from sqlalchemy.orm import Session
-
 from orm.models import (
     TwitterDataModelElonMusk,
     TwitterDataModelJeffBezos,
@@ -17,6 +14,8 @@ from orm.models import (
 )
 from scraper.context import connect_database_sqlalchemy
 from scraper.custom_exceptions import UserModelNotFound, NewsScraperMissConfigured
+from sqlalchemy.engine import Engine
+from sqlalchemy.orm import Session
 
 user_models = {
     'elonmusk': TwitterDataModelElonMusk,

@@ -4,12 +4,11 @@ import time
 from datetime import datetime
 
 import pandas as pd
+from orm.models import RedditOfficialApiModel
 from praw import Reddit
+from scraper.context import connect_database_sqlalchemy
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
-
-from orm.models import RedditOfficialApiModel
-from scraper.context import connect_database_sqlalchemy
 
 reddit = Reddit(
     client_id=os.getenv("REDDIT_CLIENT_ID", ""),
