@@ -37,6 +37,7 @@ workflows:
     jobs:
       - python-test
   build-and-push:
+    jobs:
       - build_push_image_cloud_run_mangaged
 
 jobs:
@@ -67,7 +68,7 @@ jobs:
           google-project-id: attila-szombati-sandbox
           google-compute-zone: GOOGLE_COMPUTE_ZONE
       - gcp-gcr/push-image:
-          google-project-id: GOOGLE_PROJECT_ID
+          google-project-id: attila-szombati-sandbox
           registry-url: "gcr.io"
           image: $IMAGE_NAME
       - cloudrun/deploy:
