@@ -2,5 +2,5 @@
 
 set -eux
 
-pylint scraper orm tests main.py
+pylint cloud_function
 pytest -sv tests

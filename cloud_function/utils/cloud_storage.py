@@ -22,4 +22,3 @@ class CloudStorageUtils:
         bucket = self.storage_client.get_bucket(bucket_name)
         blob = bucket.blob(file_name)
         return blob.download_as_text()
-
