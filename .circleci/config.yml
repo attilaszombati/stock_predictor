@@ -38,14 +38,14 @@ workflows:
 jobs:
   python-test:
     docker:
-      - image: cimg/python:3.8
+      - image: cimg/python:3.9
     steps:
       - checkout
       - python/install-packages:
           pkg-manager: pip
       - run:
           name: Run tests
-          command: chmod 777 test.sh && export PYTHONPATH=$PYTHONPATH:/stock_predictor && ./test.sh
+          command: chmod 777 test.sh && export PYTHONPATH=$PYTHONPATH:/cloud_function && ./test.sh
   # deploy:
   #   docker:
   #     - image: google/cloud-sdk

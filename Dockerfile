@@ -2,7 +2,7 @@ FROM python:3.8.4-slim-buster
 
 RUN apt update && apt upgrade -y && apt-get install -y libpq-dev python3-dev gcc && rm -rf /var/cache/apt && apt-get clean
 
-COPY cloud_function/requirements.txt ./
+COPY requirements.txt ./
 
 RUN python3 -m pip install --upgrade pip
 RUN pip install -r requirements.txt
