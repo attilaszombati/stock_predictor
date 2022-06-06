@@ -21,12 +21,13 @@ workflows:
           persist-workspace: true
           requires:
             - terraform/validate
+      - request-deploy:
+          type: approval
+          requires:
+            - terraform/plan
       - terraform/apply:
           attach-workspace: true
           context: terraform
-          filters:
-            branches:
-              only: main
           requires:
             - terraform/plan
 
