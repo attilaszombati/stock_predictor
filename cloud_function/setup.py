@@ -9,7 +9,7 @@ test_requirements = [
 ]
 
 setuptools.setup(
-    name="cloud_function",
+    name="cloud-function",
     version="0.1.0",
     description="twitter scraper",
     maintainer="Attila Szombati",

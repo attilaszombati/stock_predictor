@@ -3,4 +3,4 @@
 set -eux
 
 pylint cloud_function
-pytest -sv tests
+pytest -sv cloud_function/tests

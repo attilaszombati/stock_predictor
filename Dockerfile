@@ -14,7 +14,7 @@ COPY config config
 COPY cloud_function/utils utils
 COPY cloud_function/orm orm
 COPY cloud_function/scraper scraper
-COPY tests tests
+COPY cloud_function/tests tests
 ENV PATH=/root/.local/bin:$PATH
 ENV PYTHONPATH=$PYTHONPATH:/srv
 EXPOSE 8080

@@ -38,14 +38,33 @@ workflows:
 jobs:
   python-test:
     executor: python/default
+    app-dir: ~/stock_predictor/cloud_function
     steps:
       - checkout
       - python/install-packages:
           pkg-manager: pip
-          setup-file-path: ~/stock_predictor/cloud_function/  # If you're requirements.txt isn't in the root directory.
       - run:
           name: Run tests
           command: chmod 777 test.sh && export PYTHONPATH=$PYTHONPATH:/cloud_function && ./test.sh
+
+jobs:
+  build:
+    executor: python/default
+    steps:
+      - checkout
+      - python/install-packages:
+          pkg-manager: pip
+      - python/install-packages:
+          pip-dependency-file: dev-requirements.txt
+          pkg-manager: pip
+      - python/install-packages:
+          args: pytest
+          pkg-manager: pip
+          pypi-cache: false
+      - run:
+          command: |
+            pytest --version
+          name: Test
   # deploy:
   #   docker:
   #     - image: google/cloud-sdk
