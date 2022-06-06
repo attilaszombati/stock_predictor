@@ -7,8 +7,8 @@ import pandas as pd
 from praw import Reddit
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
-from orm.models import RedditOfficialApiModel
 from scraper.context import connect_database_sqlalchemy
+from orm.models import RedditOfficialApiModel
 
 reddit = Reddit(
     client_id=os.getenv("REDDIT_CLIENT_ID", ""),
