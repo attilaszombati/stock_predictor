@@ -68,7 +68,7 @@ jobs:
           google-project-id: GOOGLE_PROJECT_ID
           google-compute-zone: GOOGLE_COMPUTE_ZONE
       - gcp-gcr/push-image:
-          google-project-id: attila-szombati-sandbox
+          google-project-id: GOOGLE_PROJECT_ID
           registry-url: "gcr.io"
           image: $IMAGE_NAME
       - cloudrun/deploy:
