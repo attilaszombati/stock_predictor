@@ -4,7 +4,6 @@ orbs:
   terraform: circleci/terraform@3.1.0
   python: circleci/python@2.0.3
   gcp-gcr: circleci/gcp-gcr@0.15.0
-  cloudrun: circleci/gcp-cloud-run@1.0.0
 
 workflows:
   deploy_infrastructure:
@@ -53,7 +52,7 @@ jobs:
 
   build_push_image_cloud_run_mangaged:
     docker:
-      - image: circleci/python:3.7.4
+      - image: circleci/python:3.9.1
     steps:
       - checkout
       - setup_remote_docker:
@@ -69,20 +68,3 @@ jobs:
           google-project-id: GOOGLE_PROJECT_ID
           registry-url: "gcr.io"
           image: $IMAGE_NAME
-      # - cloudrun/deploy:
-      #     platform: "managed"
-      #     image: "gcr.io/attila-szombati-sandbox/twitter-scraper"
-      #     service-name: "orb-gcp-cloud-run"
-      #     region: $GOOGLE_COMPUTE_ZONE
-      #     unauthenticated: true
-
-  # deploy:
-  #   docker:
-  #     - image: google/cloud-sdk
-  #   steps:
-  #     - checkout
-  #     - run: |
-  #         echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account --key-file=-
-  #         gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
-  #         gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
-  #         gcloud functions deploy twitter-scraper --region ${GOOGLE_COMPUTE_ZONE} --entry-point handler --runtime python39 --memory 512 --trigger-http --timeout 540 --set-env-vars RUNTIME=cloud,DB_NAME=twitter,DB_USER=postgres,GOOGLE_PROJECT_ID=${GOOGLE_PROJECT_ID} --verbosity=debug
