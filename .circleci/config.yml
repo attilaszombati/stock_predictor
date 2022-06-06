@@ -43,7 +43,7 @@ jobs:
       - checkout
       - run:
           name: Install Python Dependencies
-          command: pip install -r cloud_function/requirements.txt
+          command: pip install -r cloud_function/requirements.txt && pip install ./cloud_function
       - run:
           name: Run tests
           command: export PYTHONPATH=$PYTHONPATH:/cloud_function && ./cloud_function/test.sh
