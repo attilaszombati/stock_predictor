@@ -1,8 +1,9 @@
+version: '3'
+
 services:
-  postgres:
-    image: arm64v8/postgres:14
-    container_name: postgres
+  scraper:
+    build: ./cloud_function
+    container_name: scraper
+    platform: linux/amd64
     ports:
-      - 5432:5432
-    environment:
-      POSTGRES_PASSWORD: postgres
+      - 8080:8080

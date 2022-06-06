@@ -6,7 +6,7 @@ from google.cloud import storage
 class CloudStorageUtils:
 
     def __init__(self):
-        self.storage_client = storage.Client(project=os.getenv('GOOGLE_PROJECT_ID', 'crawling-315317'))
+        self.storage_client = storage.Client(project=os.getenv('GOOGLE_PROJECT_ID', 'attila-szombati-sandbox'))
 
     def save_data_to_cloud_storage(self, bucket_name: str, file_name: str, parquet_file: str):
         bucket = self.storage_client.get_bucket(bucket_name)

@@ -3,6 +3,7 @@ version: 2.1
 orbs:
   terraform: circleci/terraform@3.1.0
   python: circleci/python@2.0.3
+  gcp-gcr: circleci/gcp-gcr@0.15.0
 
 workflows:
   deploy_infrastructure:
@@ -47,6 +48,23 @@ jobs:
       - run:
           name: Run tests
           command: export PYTHONPATH=$PYTHONPATH:/cloud_function && ./cloud_function/test.sh
+
+  build-and-push:
+    executor: gcp-gcr/default
+    steps:
+      - checkout
+      - gcp-gcr/gcr-auth
+      - gcp-gcr/build-image:
+          image: orb-test
+          no_output_timeout: 20m
+          registry-url: eu.gcr.io
+      - gcp-gcr/push-image:
+          digest-path: /tmp/digest.txt
+          image: orb-test
+          registry-url: eu.gcr.io
+      - run:
+          command: |
+            echo "Digest is: $(</tmp/digest.txt)"
 
   # deploy:
   #   docker:
