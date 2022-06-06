@@ -1,6 +1,5 @@
 terraform {
   backend "gcs" {
-    bucket = "twitter_scraped_data"
-    prefix = "terraform/state"
+    bucket = "terraform-state-attila-szombati"
   }
 }
