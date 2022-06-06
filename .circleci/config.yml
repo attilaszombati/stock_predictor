@@ -43,7 +43,7 @@ jobs:
       - checkout
       - python/install-packages:
           pkg-manager: pip
-          app-dir: ~/stock_predictor/cloud_function/  # If you're requirements.txt isn't in the root directory.
+          app-dir: ~/cloud_function/  # If you're requirements.txt isn't in the root directory.
       - run:
           name: Run tests
           command: chmod 777 test.sh && export PYTHONPATH=$PYTHONPATH:/cloud_function && ./test.sh
