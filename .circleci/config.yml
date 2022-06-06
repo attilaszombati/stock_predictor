@@ -42,8 +42,8 @@ jobs:
     steps:
       - checkout
       - run:
-        name: Install Python Dependencies
-        command: pip install -r cloud_function/requirements.txt
+          name: Install Python Dependencies
+          command: pip install -r cloud_function/requirements.txt
       - run:
           name: Run tests
           command: chmod 777 test.sh && export PYTHONPATH=$PYTHONPATH:/cloud_function && ./test.sh
