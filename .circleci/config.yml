@@ -60,7 +60,6 @@ jobs:
       - setup_remote_docker:
           docker_layer_caching: false
       - run:
-          context: terraform
           name: Build app binary and Docker image
           command: ./cloud_function/build-image.sh
       - gcp-gcr/gcr-auth:
