@@ -4,6 +4,7 @@ orbs:
   terraform: circleci/terraform@3.1.0
   python: circleci/python@2.0.3
   gcp-gcr: circleci/gcp-gcr@0.15.0
+  cloudrun: circleci/gcp-cloud-run@1.0.0
 
 workflows:
   deploy_infrastructure:
