@@ -39,7 +39,9 @@ jobs:
   python-test:
     executor: python/default
     parameters:
-      app-dir: ~/stock_predictor/cloud_function
+      app-dir:
+       default: ~/stock_predictor/cloud_function
+       type: string
     steps:
       - checkout
       - python/install-packages:
