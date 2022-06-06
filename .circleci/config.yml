@@ -69,12 +69,12 @@ jobs:
           google-project-id: GOOGLE_PROJECT_ID
           registry-url: "gcr.io"
           image: $IMAGE_NAME
-      - cloudrun/deploy:
-          platform: "managed"
-          image: "gcr.io/attila-szombati-sandbox/twitter-scraper"
-          service-name: "orb-gcp-cloud-run"
-          region: $GOOGLE_COMPUTE_ZONE
-          unauthenticated: true
+      # - cloudrun/deploy:
+      #     platform: "managed"
+      #     image: "gcr.io/attila-szombati-sandbox/twitter-scraper"
+      #     service-name: "orb-gcp-cloud-run"
+      #     region: $GOOGLE_COMPUTE_ZONE
+      #     unauthenticated: true
 
   # deploy:
   #   docker:

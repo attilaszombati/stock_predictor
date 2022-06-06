@@ -5,3 +5,5 @@ __pycache__/
 *.pyc
 .terraform
 attila-szombati-sandbox*.json
+*.hcl
+*.zip
