@@ -8,7 +8,7 @@ from praw import Reddit
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
-from cloud_function.orm import RedditOfficialApiModel
+from cloud_function.orm.models import RedditOfficialApiModel
 from cloud_function.scraper.context import connect_database_sqlalchemy
 
 reddit = Reddit(

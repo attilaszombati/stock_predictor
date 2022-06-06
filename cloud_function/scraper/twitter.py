@@ -8,7 +8,7 @@ import snscrape.modules.twitter as sntwitter
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
-from cloud_function.orm import (
+from cloud_function.orm.models import (
     TwitterDataModelElonMusk,
     TwitterDataModelJeffBezos,
     TwitterDataModelBarackObama,
