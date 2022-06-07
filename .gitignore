@@ -3,3 +3,7 @@ __pycache__/
 .DS_Store
 *.pq
 *.pyc
+.terraform
+attila-szombati-sandbox*.json
+*.hcl
+*.zip

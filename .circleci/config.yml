@@ -1,56 +1,70 @@
 version: 2.1
 
 orbs:
-  # The python orb contains a set of prepackaged CircleCI configuration you can use repeatedly in your configuration files
-  # Orb commands and jobs help you with common scripting around a language/tool
-  # so you dont have to copy and paste it everywhere.
-  # See the orb documentation here: https://circleci.com/developer/orbs/orb/circleci/python
-  python: circleci/python@1.2
+  terraform: circleci/terraform@3.1.0
+  python: circleci/python@2.0.3
+  gcp-gcr: circleci/gcp-gcr@0.15.0
 
 workflows:
-  sample:  # This is the name of the workflow, feel free to change it to better match your workflow.
-    # Inside the workflow, you define the jobs you want to run. 
-    # For more details on extending your workflow, see the configuration docs: https://circleci.com/docs/2.0/configuration-reference/#workflows 
+  deploy_infrastructure:
     jobs:
-      - build-and-test
+      - build_push_image_cloud_run_mangaged
+      - terraform/fmt:
+          checkout: true
+          context: terraform
+      - terraform/validate:
+          checkout: true
+          context: terraform
+          requires:
+            - terraform/fmt
+      - terraform/plan:
+          checkout: true
+          context: terraform
+          persist-workspace: true
+          requires:
+            - terraform/validate
       - request-deploy:
-            type: approval
-            requires:
-              - build-and-test
-      - deploy:
+          type: approval
+          requires:
+            - terraform/plan
+      - terraform/apply:
+          attach-workspace: true
+          context: terraform
           requires:
             - request-deploy
 
+  code-validation:
+    jobs:
+      - python-test
+
 jobs:
-  build-and-test:  # This is the name of the job, feel free to change it to better match what you're trying to do!
-    # These next lines defines a Docker executors: https://circleci.com/docs/2.0/executor-types/
-    # You can specify an image from Dockerhub or use one of the convenience images from CircleCI's Developer Hub
-    # A list of available CircleCI Docker convenience images are available here: https://circleci.com/developer/images/image/cimg/python
-    # The executor is the environment in which the steps below will be executed - below will use a python 3.9 container
-    # Change the version below to your required version of python
+  python-test:
     docker:
-      - image: cimg/python:3.8
-    # Checkout the code as the first step. This is a dedicated CircleCI step.
-    # The python orb's install-packages step will install the dependencies from a Pipfile via Pipenv by default.
-    # Here we're making sure we use just use the system-wide pip. By default it uses the project root's requirements.txt.
-    # Then run your tests!
-    # CircleCI will report the results back to your VCS provider.
+      - image: circleci/python:3.9.1
     steps:
       - checkout
-      - python/install-packages:
-          pkg-manager: pip
-          # app-dir: ~/project/package-directory/  # If you're requirements.txt isn't in the root directory.
-          # pip-dependency-file: test-requirements.txt  # if you have a different name for your requirements file, maybe one that combines your runtime and test requirements.
+      - run:
+          name: Install Python Dependencies
+          command: pip install -r cloud_function/requirements.txt && pip install ./cloud_function
       - run:
           name: Run tests
-          command: chmod 777 test.sh && export PYTHONPATH=$PYTHONPATH:/stock_predictor && ./test.sh
-  deploy:
+          command: export PYTHONPATH=$PYTHONPATH:/cloud_function && ./cloud_function/test.sh
+
+  build_push_image_cloud_run_mangaged:
     docker:
-      - image: google/cloud-sdk
+      - image: circleci/python:3.9.1
     steps:
       - checkout
-      - run: |
-          echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account --key-file=-
-          gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
-          gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
-          gcloud functions deploy twitter-scraper --region ${GOOGLE_COMPUTE_ZONE} --entry-point handler --runtime python39 --memory 512 --trigger-http --timeout 540 --set-env-vars RUNTIME=cloud,DB_NAME=twitter,DB_USER=postgres,GOOGLE_PROJECT_ID=${GOOGLE_PROJECT_ID} --verbosity=debug
+      - setup_remote_docker:
+          docker_layer_caching: false
+      - run:
+          name: Build app binary and Docker image
+          command: ./cloud_function/build-image.sh
+      - gcp-gcr/gcr-auth:
+          gcloud-service-key: GOOGLE_CLOUD_KEYS
+          google-project-id: GOOGLE_PROJECT_ID
+          google-compute-zone: GOOGLE_COMPUTE_ZONE
+      - gcp-gcr/push-image:
+          google-project-id: GOOGLE_PROJECT_ID
+          registry-url: "gcr.io"
+          image: $IMAGE_NAME

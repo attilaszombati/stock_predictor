@@ -9,8 +9,7 @@ RUN pip install -r requirements.txt
 
 WORKDIR /srv
 
-COPY .pylintrc test.sh ./
-COPY config config
+COPY main.py setup.py build-image.sh ./
 COPY utils utils
 COPY orm orm
 COPY scraper scraper
@@ -19,4 +18,4 @@ ENV PATH=/root/.local/bin:$PATH
 ENV PYTHONPATH=$PYTHONPATH:/srv
 EXPOSE 8080
 
-CMD ["python3", "./scraper/twitter.py"]
+CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 main:app
