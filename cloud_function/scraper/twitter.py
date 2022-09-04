@@ -53,6 +53,9 @@ class TwitterScraperBase:
         tweets = sntwitter.TwitterSearchScraper(query).get_items()
         for tweet in tweets:
             print(tweet.__dict__)
+            print("X" * 50)
+            print(tweet.hashtags)
+            print("X" * 50)
             yield tweet
 
     @staticmethod
@@ -79,6 +82,12 @@ class TwitterScraperBase:
             return ','.join(link for link in data)
         return data
 
+    @staticmethod
+    def check_hashtags(data):
+        if data is not None:
+            return ','.join(hashtag for hashtag in data)
+        return data
+
     def create_models_from_scraping(self, scraping_batch):
         yield from (
             user_models.get(self.user)(
@@ -88,7 +97,7 @@ class TwitterScraperBase:
                 conversation_id=data.conversationId,
                 coordinates=data.coordinates,
                 tweeted_at=data.date,
-                hashtags=data.hashtags,
+                hashtags=self.check_hashtags(data.hashtags),
                 in_reply_to_tweet_id=data.inReplyToTweetId,
                 in_reply_to_user=self.check_reply(data.inReplyToUser),
                 language=data.lang,
@@ -183,7 +192,7 @@ def scraping_data_from_hashtag():
 if __name__ == '__main__':
     postgres_engine: Engine = connect_database_sqlalchemy()
     scraping_type = 'news'
-    twitter_user = 'JoeBiden'
+    twitter_user = 'JeffBezos'
     user_models.get(twitter_user).metadata.create_all(postgres_engine)
     with Session(postgres_engine) as session:
         if scraping_type == 'news':
