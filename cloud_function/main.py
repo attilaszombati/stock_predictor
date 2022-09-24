@@ -6,7 +6,7 @@ from flask import Flask, request
 from scraper.context import connect_database_sqlalchemy
 from scraper.twitter import user_models, TwitterNewsScraper, TwitterHistoryScraper
 from sqlalchemy.orm import Session
-from utils.cloud_storage import CloudStorageUtils
+from cloud_function.utils.cloud_storage import CloudStorageUtils
 
 user_tables = {
     'elonmusk': "elon_musk",

@@ -10,7 +10,7 @@ RUN pip install -r requirements.txt
 WORKDIR /srv
 
 COPY main.py setup.py build-image.sh ./
-COPY ../utils utils
+COPY utils utils
 COPY orm orm
 COPY scraper scraper
 COPY tests tests
