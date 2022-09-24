@@ -83,7 +83,7 @@ resource "google_cloud_scheduler_job" "crypto-data-scraper-scheduler" {
     headers     = { "Content-Type" : "application/json", "User-Agent" : "Google-Cloud-Scheduler" }
     body        = base64encode("{\"hola\": \"asd\"}")
     oidc_token {
-      service_account_email = google_service_account.cloudrun-invoker.email
+      service_account_email = google_service_account.crypto-data-scraper-invoker.email
     }
   }
 }

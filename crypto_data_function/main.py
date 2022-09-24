@@ -27,7 +27,7 @@ def main():
 @app.route("/", methods=['POST'])
 def handler():
     api = REST(key_id=API_KEY, secret_key=SECRET_KEY, base_url="https://paper-api.alpaca.markets")
-    bars = api.get_crypto_bars("BTCUSD", TimeFrame.Minute).df
+    bars = api.get_crypto_bars("BTCUSD", TimeFrame.Minute).df.iloc[[-1]]
     timestamp = time.time()
     bars.to_parquet(path=f'/tmp/BTCUSD_{timestamp}.pq', compression='snappy')
     storage = CloudStorageUtils()
