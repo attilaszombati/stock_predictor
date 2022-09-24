@@ -7,3 +7,10 @@ services:
     platform: linux/amd64
     ports:
       - 8080:8080
+
+  crypto_data:
+    build: ./crypto_data_function
+    container_name: crypto_data
+    platform: linux/amd64
+    ports:
+      - 8080:8080

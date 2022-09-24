@@ -22,6 +22,26 @@ resource "google_cloud_run_service" "twitter-scraper" {
   autogenerate_revision_name = true
 }
 
+resource "google_cloud_run_service" "crypto-data-scraper" {
+  name     = "crypto-data-scraper"
+  location = "us-central1"
+
+  template {
+    spec {
+      containers {
+        image = "gcr.io/attila-szombati-sandbox/crypto-data-scraper"
+        ports {
+          container_port = 8080
+        }
+      }
+    }
+    timeout_seconds      = 540
+    service_account_name = google_service_account.storage-admin.email
+  }
+  autogenerate_revision_name = true
+}
+
+
 resource "google_cloud_scheduler_job" "cloudrun-scheduler" {
   name             = "cloudrun-scheduler"
   description      = "Invoke cloud run"
@@ -43,4 +63,43 @@ resource "google_cloud_scheduler_job" "cloudrun-scheduler" {
       service_account_email = google_service_account.cloudrun-invoker.email
     }
   }
+}
+
+resource "google_cloud_scheduler_job" "crypto-data-scraper-scheduler" {
+  name             = "crypto-data-scraper-scheduler"
+  description      = "Invoke cloud run"
+  schedule         = "* * * * *"
+  time_zone        = "Europe/Budapest"
+  attempt_deadline = "320s"
+
+  retry_config {
+    retry_count = 1
+  }
+
+
+  http_target {
+    http_method = "POST"
+    uri         = google_cloud_run_service.crypto-data-scraper.status.0.url
+    headers     = { "Content-Type" : "application/json", "User-Agent" : "Google-Cloud-Scheduler" }
+    body        = base64encode("{}")
+    oidc_token {
+      service_account_email = google_service_account.cloudrun-invoker.email
+    }
+  }
+}
+
+resource "google_secret_manager_secret_iam_member" "alpaca-api-secret-access" {
+  provider = google-beta
+
+  secret_id = "alpaca-api"
+  role      = "roles/secretmanager.secretAccessor"
+  member    = google_service_account.cloudrun-invoker.email
+}
+
+resource "google_secret_manager_secret_iam_member" "alpaca--secret-api-access" {
+  provider = google-beta
+
+  secret_id = "alpaca-secret-key"
+  role      = "roles/secretmanager.secretAccessor"
+  member    = google_service_account.cloudrun-invoker.email
 }
