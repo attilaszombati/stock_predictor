@@ -4,6 +4,8 @@ import os
 from flask import Flask, request
 from alpaca_trade_api import REST, TimeFrame
 
+from crypto_data_function.utils.cloud_storage import CloudStorageUtils
+
 app = Flask(__name__)
 
 API_KEY = 'AK2356RHR3VZ4KDCHYQB'
@@ -26,7 +28,12 @@ def main():
 def handler():
     api = REST(key_id=API_KEY, secret_key=SECRET_KEY, base_url="https://paper-api.alpaca.markets")
     bars = api.get_crypto_bars("BTCUSD", TimeFrame.Minute).df
-    print(bars.iloc[[-1]].to_json())
+    timestamp = time.time()
+    bars.to_parquet(path=f'/tmp/BTCUSD_{timestamp}.pq', compression='snappy')
+    storage = CloudStorageUtils()
+    storage.save_data_to_cloud_storage(bucket_name='crypto_data',
+                                       file_name=f'BTCUSD/{timestamp}.pq',
+                                       parquet_file=f'/tmp/BTCUSD_{timestamp}.pq')
     return {"asd": "ok"}
 
 
