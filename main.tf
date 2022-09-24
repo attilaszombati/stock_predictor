@@ -10,7 +10,7 @@ resource "google_cloud_run_service" "twitter-scraper" {
   template {
     spec {
       containers {
-        image = "gcr.io/attila-szombati-sandbox/twitter-scraper"
+        image = "gcr.io/attila-szombati-sandbox/twitter-scraper:latest"
         ports {
           container_port = 8080
         }
@@ -29,7 +29,7 @@ resource "google_cloud_run_service" "crypto-data-scraper" {
   template {
     spec {
       containers {
-        image = "gcr.io/attila-szombati-sandbox/crypto-data-scraper"
+        image = "gcr.io/attila-szombati-sandbox/crypto-data-scraper:latest"
         ports {
           container_port = 8080
         }
