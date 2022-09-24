@@ -4,7 +4,7 @@ import os
 from flask import Flask, request
 from alpaca_trade_api import REST, TimeFrame
 
-from crypto_data_function.utils.cloud_storage import CloudStorageUtils
+from utils.cloud_storage import CloudStorageUtils
 
 app = Flask(__name__)
 
