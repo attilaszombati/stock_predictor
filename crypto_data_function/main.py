@@ -22,7 +22,7 @@ def main():
         time.sleep(60)
 
 
-@app.route("/", methodes=['POST'])
+@app.route("/", methods=['POST'])
 def handler():
     api = REST(key_id=API_KEY, secret_key=SECRET_KEY, base_url="https://paper-api.alpaca.markets")
     bars = api.get_crypto_bars("BTCUSD", TimeFrame.Minute).df
