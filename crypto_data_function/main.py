@@ -26,7 +26,8 @@ def main():
 def handler():
     api = REST(key_id=API_KEY, secret_key=SECRET_KEY, base_url="https://paper-api.alpaca.markets")
     bars = api.get_crypto_bars("BTCUSD", TimeFrame.Minute).df
-    return bars.iloc[[-1]].to_json()
+    print(bars.iloc[[-1]].to_json())
+    return {"asd": "ok"}
 
 
 if __name__ == "__main__":
