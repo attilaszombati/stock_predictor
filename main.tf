@@ -87,19 +87,3 @@ resource "google_cloud_scheduler_job" "crypto-data-scraper-scheduler" {
     }
   }
 }
-
-resource "google_secret_manager_secret_iam_member" "alpaca-api-secret-access" {
-  provider = google-beta
-
-  secret_id = "alpaca-api"
-  role      = "roles/secretmanager.secretAccessor"
-  member    = google_service_account.cloudrun-invoker.email
-}
-
-resource "google_secret_manager_secret_iam_member" "alpaca--secret-api-access" {
-  provider = google-beta
-
-  secret_id = "alpaca-secret-key"
-  role      = "roles/secretmanager.secretAccessor"
-  member    = google_service_account.cloudrun-invoker.email
-}
