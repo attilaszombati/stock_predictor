@@ -31,7 +31,7 @@ def handler():
     timestamp = time.time()
     bars.to_parquet(path=f'/tmp/BTCUSD_{timestamp}.pq', compression='snappy')
     print("X" * 50)
-    print(bars.iloc[[-1]])
+    print(bars)
     print("X" * 50)
     storage = CloudStorageUtils()
     storage.save_data_to_cloud_storage(bucket_name='crypto_data_collection',
