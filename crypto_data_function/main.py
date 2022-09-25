@@ -30,14 +30,11 @@ def handler():
     bars = api.get_crypto_bars("BTCUSD", TimeFrame.Minute).df.iloc[[-1]]
     timestamp = time.time()
     bars.to_parquet(path=f'/tmp/BTCUSD_{timestamp}.pq', compression='snappy')
-    print("X" * 50)
-    print(bars)
-    print("X" * 50)
     storage = CloudStorageUtils()
     storage.save_data_to_cloud_storage(bucket_name='crypto_data_collection',
                                        file_name=f'BTCUSD/{timestamp}.pq',
                                        parquet_file=f'/tmp/BTCUSD_{timestamp}.pq')
-    return {"asd": "ok"}
+    return bars.to_json()
 
 
 if __name__ == "__main__":
