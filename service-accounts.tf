@@ -14,7 +14,7 @@ resource "google_project_iam_binding" "cloud-run-invoker-iam" {
 
   members = [
     "serviceAccount:${google_service_account.cloudrun-invoker.email}",
-    "serviceAccount:${google_service_account.crypto-data-scraper-invoker.email}",
+    "serviceAccount:${google_service_account.crypto-data-scraper-invoker.email}"
   ]
 }
 
@@ -37,6 +37,7 @@ resource "google_project_iam_binding" "storage-admin-iam" {
   role    = "roles/storage.admin"
 
   members = [
-    "serviceAccount:${google_service_account.storage-admin.email}",
+    "serviceAccount:${google_service_account.cloudrun-invoker.email}",
+    "serviceAccount:${google_service_account.crypto-data-scraper-invoker.email}"
   ]
 }

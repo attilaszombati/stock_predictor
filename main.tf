@@ -19,6 +19,10 @@ resource "google_cloud_run_service" "twitter-scraper" {
       service_account_name = google_service_account.storage-admin.email
     }
   }
+  traffic {
+    percent         = 100
+    latest_revision = true
+  }
   autogenerate_revision_name = true
 }
 
@@ -37,6 +41,10 @@ resource "google_cloud_run_service" "crypto-data-scraper" {
       timeout_seconds      = 540
       service_account_name = google_service_account.storage-admin.email
     }
+  }
+  traffic {
+    percent         = 100
+    latest_revision = true
   }
   autogenerate_revision_name = true
 }
