@@ -1,3 +1,4 @@
+import os
 import time
 
 from alpaca.data import CryptoHistoricalDataClient, CryptoBarsRequest, TimeFrame, TimeFrameUnit
