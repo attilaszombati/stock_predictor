@@ -39,6 +39,7 @@ resource "google_cloud_run_service" "crypto-data-scraper" {
         }
       }
       timeout_seconds = 540
+      service_account_name = google_service_account.storage-admin.email
     }
   }
   traffic {
