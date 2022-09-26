@@ -38,7 +38,7 @@ resource "google_cloud_run_service" "crypto-data-scraper" {
           container_port = 8080
         }
       }
-      timeout_seconds      = 540
+      timeout_seconds = 540
     }
   }
   traffic {
