@@ -14,3 +14,17 @@ services:
     platform: linux/amd64
     ports:
       - 8080:8080
+
+  marketstore:
+    image: alpacamarkets/marketstore:v2.1.1
+    container_name: marketstore
+    platform: linux/amd64
+    network_mode: host
+    volumes:
+      - $PWD/mktsdb:/project/data/mktsdb
+      - $PWD/btc_history.yml:/tmp/mkts.yml
+      - $PWD/btc_data:/data
+    command: marketstore -config /tmp/mkts.yml
+    ports:
+      - 5993:5993
+
