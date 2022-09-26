@@ -8,13 +8,21 @@ resource "google_service_account" "crypto-data-scraper-invoker" {
   display_name = "SA for invoke cloud run services"
 }
 
+resource "google_cloud_run_service_iam_binding" "binding" {
+  location = google_cloud_run_service.crypto-data-scraper.location
+  service  = google_cloud_run_service.crypto-data-scraper.name
+  role     = "roles/run.invoker"
+  members = [
+    "serviceAccount:${google_service_account.crypto-data-scraper-invoker.email}"
+  ]
+}
+
 resource "google_project_iam_binding" "cloud-run-invoker-iam" {
   project = "attila-szombati-sandbox"
   role    = "roles/run.invoker"
 
   members = [
     "serviceAccount:${google_service_account.cloudrun-invoker.email}",
-    "serviceAccount:${google_service_account.crypto-data-scraper-invoker.email}"
   ]
 }
 
@@ -37,7 +45,6 @@ resource "google_project_iam_binding" "storage-admin-iam" {
   role    = "roles/storage.admin"
 
   members = [
-    "serviceAccount:${google_service_account.cloudrun-invoker.email}",
-    "serviceAccount:${google_service_account.crypto-data-scraper-invoker.email}"
+    "serviceAccount:${google_service_account.storage-admin.email}",
   ]
 }
