@@ -12,19 +12,6 @@ API_KEY = 'AKRKQK0FZP17RH0TS516'
 SECRET_KEY = 'GszzkYig0nXUMquNyz0Viw1R95oiSKi0KjJOcz4C'
 
 
-def main():
-    print("Hello main function")
-    # Instantiate REST API Connection
-    api = REST(key_id=API_KEY, secret_key=SECRET_KEY, base_url="https://paper-api.alpaca.markets")
-
-    while True:
-        # Fetch 1Minute historical bars of Bitcoin
-        bars = api.get_crypto_bars("BTCUSD", TimeFrame.Minute).df
-        print(bars)
-        # print(bars.iloc[[-1]].to_json())
-        time.sleep(60)
-
-
 def history():
     print("Hello main function")
     # Instantiate REST API Connection
