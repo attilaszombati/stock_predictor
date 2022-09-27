@@ -8,10 +8,14 @@ orbs:
 workflows:
   deploy_infrastructure:
     jobs:
-      - build_push_image_cloud_run_mangaged
+      - build_push_image_social_media_scraper
+      - build_push_image_crypto_data_scraper
       - terraform/fmt:
           checkout: true
           context: terraform
+          requires:
+            - build_push_image_social_media_scraper
+            - build_push_image_crypto_data_scraper
       - terraform/validate:
           checkout: true
           context: terraform
@@ -50,7 +54,7 @@ jobs:
           name: Run tests
           command: export PYTHONPATH=$PYTHONPATH:/cloud_function && ./cloud_function/test.sh
 
-  build_push_image_cloud_run_mangaged:
+  build_push_image_social_media_scraper:
     docker:
       - image: circleci/python:3.9.1
     steps:
@@ -58,8 +62,27 @@ jobs:
       - setup_remote_docker:
           docker_layer_caching: false
       - run:
-          name: Build app binary and Docker image
+          name: Build social media scraper docker image
           command: ./cloud_function/build-image.sh
+      - gcp-gcr/gcr-auth:
+          gcloud-service-key: GOOGLE_CLOUD_KEYS
+          google-project-id: GOOGLE_PROJECT_ID
+          google-compute-zone: GOOGLE_COMPUTE_ZONE
+      - gcp-gcr/push-image:
+          google-project-id: GOOGLE_PROJECT_ID
+          registry-url: "gcr.io"
+          image: $IMAGE_NAME
+
+  build_push_image_crypto_data_scraper:
+    docker:
+      - image: circleci/python:3.9.1
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: false
+      - run:
+          name: Build crypto data scraper docker image
+          command: ./crypto_data_function/build-image.sh
       - gcp-gcr/gcr-auth:
           gcloud-service-key: GOOGLE_CLOUD_KEYS
           google-project-id: GOOGLE_PROJECT_ID

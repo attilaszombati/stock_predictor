@@ -8,7 +8,7 @@ resource "google_project_iam_binding" "cloud-run-invoker-iam" {
   role    = "roles/run.invoker"
 
   members = [
-    "serviceAccount:${google_service_account.cloudrun-invoker.email}",
+    "serviceAccount:${google_service_account.cloudrun-invoker.email}"
   ]
 }
 
