@@ -89,7 +89,7 @@ resource "google_cloud_scheduler_job" "crypto-data-scraper-scheduler" {
     http_method = "POST"
     uri         = google_cloud_run_service.crypto-data-scraper.status.0.url
     headers     = { "Content-Type" : "application/json", "User-Agent" : "Google-Cloud-Scheduler" }
-    body        = base64encode("{\"hola\": \"asd\"}")
+    body        = base64encode("{\"scraping_mode\": \"not_history\"}")
     oidc_token {
       service_account_email = google_service_account.cloudrun-invoker.email
     }
