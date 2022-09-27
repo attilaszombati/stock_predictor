@@ -31,6 +31,7 @@ def main(symbol: str = 'BTCUSD'):
 @app.route("/", methods=['POST'])
 def handler():
     data = request.get_json()
+    print(f"The request is : {request}")
     symbol = data.get('symbol')
     if data.get('scraping_mode') == 'history':
         pass
