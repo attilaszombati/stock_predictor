@@ -1,3 +1,4 @@
+import logging
 import os
 
 from alpaca.data import TimeFrame
@@ -5,6 +6,8 @@ from alpaca_trade_api import REST
 from flask import Flask, request
 
 from utils.cloud_storage import CloudStorageUtils
+
+logger = logging.getLogger('twitter-scraper')
 
 app = Flask(__name__)
 
@@ -22,7 +25,7 @@ def main(symbol: str = 'BTCUSD'):
     ).df
     latest_bar_data = data.index.format()[0].replace(" ", "_")
     data.to_parquet(path=f'/tmp/{latest_bar_data}_{symbol}.pq', compression='snappy')
-    print(f"Saving {latest_bar_data} data for {symbol} to cloud storage")
+    logger.warning(f"Saving {latest_bar_data} data for {symbol} to cloud storage")
     gcs_storage.save_data_to_cloud_storage(bucket_name='crypto_data_collection',
                                            file_name=f'{symbol}/{latest_bar_data}_{symbol}.pq',
                                            parquet_file=f'/tmp/{symbol}_{latest_bar_data}.pq')
@@ -31,7 +34,7 @@ def main(symbol: str = 'BTCUSD'):
 @app.route("/", methods=['POST'])
 def handler():
     data = request.get_json()
-    print(f"The request is : {request}")
+    logger.warning(f"The request is : {request}")
     symbol = data.get('symbol')
     if data.get('scraping_mode') == 'history':
         pass
