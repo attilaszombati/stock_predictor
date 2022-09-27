@@ -1,28 +1,16 @@
 import os
 import time
 
-from alpaca.data import CryptoHistoricalDataClient, CryptoBarsRequest, TimeFrame, TimeFrameUnit
+from alpaca.data import TimeFrame
 from alpaca_trade_api import REST
 from flask import Flask
+
 from utils.cloud_storage import CloudStorageUtils
 
 app = Flask(__name__)
 
 API_KEY = 'AKRKQK0FZP17RH0TS516'
 SECRET_KEY = 'GszzkYig0nXUMquNyz0Viw1R95oiSKi0KjJOcz4C'
-
-
-def history():
-    print("Hello main function")
-    # Instantiate REST API Connection
-    api = CryptoHistoricalDataClient(api_key=API_KEY, secret_key=SECRET_KEY)
-    request_obj = CryptoBarsRequest(symbol_or_symbols='ETH/USD',
-                                    timeframe=TimeFrame(amount=1, unit=TimeFrameUnit.Minute),
-                                    start='2018-01-01 00:00:00',
-                                    end='2022-08-01 00:00:00')
-
-    history_btc_usd = api.get_crypto_bars(request_params=request_obj).df
-    print(history_btc_usd)
 
 
 @app.route("/", methods=['POST'])
