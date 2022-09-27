@@ -28,7 +28,7 @@ def main(symbol: str = 'BTCUSD'):
     logger.warning(f"Saving {latest_bar_data} data for {symbol} to cloud storage")
     gcs_storage.save_data_to_cloud_storage(bucket_name='crypto_data_collection',
                                            file_name=f'{symbol}/{latest_bar_data}_{symbol}.pq',
-                                           parquet_file=f'/tmp/{symbol}_{latest_bar_data}.pq')
+                                           parquet_file=f'/tmp/{latest_bar_data}_{symbol}.pq')
 
 
 @app.route("/", methods=['POST'])
