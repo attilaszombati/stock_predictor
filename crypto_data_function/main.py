@@ -34,14 +34,16 @@ def main(symbol: str = 'BTCUSD'):
 @app.route("/", methods=['POST'])
 def handler():
     data = request.get_json()
-    logger.warning(f"The request is : {request}")
-    symbol = data.get('symbol')
-    if data.get('scraping_mode') == 'history':
+    logger.warning(f"The data is : {data}")
+    symbols = data.get('SYMBOLS')
+    if data.get('SCRAPING_TYPE') == 'history':
         pass
     else:
-        main(symbol=symbol)
+        for symbol in symbols:
+            main(symbol=symbol)
     return "OK"
 
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+    # app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+    main()
