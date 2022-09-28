@@ -22,7 +22,7 @@ def main(symbol: str = 'BTCUSD'):
     data = alpaca_api.get_crypto_bars(
         symbol=symbol,
         timeframe=time_frame.value
-    ).df
+    ).df.iloc[[-1]]
     latest_bar_data = data.index.format()[0].replace(" ", "_")
     data.to_parquet(path=f'/tmp/{latest_bar_data}_{symbol}.pq', compression='snappy')
     logger.warning(f"Saving {latest_bar_data} data for {symbol} to cloud storage")
