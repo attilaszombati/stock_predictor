@@ -54,6 +54,7 @@ def historical_data(symbol: str = 'BTC-USD'):
 
         data.to_parquet(path=f'/tmp/{latest_bar_data}_{symbol}.pq', compression='snappy')
 
+        logger.warning(f"The timestamp is: {latest_bar_data}")
         logger.warning(f"Saving historical data for {symbol} to cloud storage for the week {one_week}")
 
         gcs_storage.save_data_to_cloud_storage(bucket_name='crypto_data_collection',
