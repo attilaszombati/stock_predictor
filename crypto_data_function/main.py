@@ -50,6 +50,9 @@ def historical_data(symbol: str = 'BTC-USD'):
         data = yf.download(symbol, start=one_week[1], end=one_week[0], interval="1m", actions=True)
         data.rename(columns=str.lower, inplace=True)
         data.index.rename("timestamp", inplace=True)
+
+        logger.warning(f"The index of the data is {data.index}")
+
         latest_bar_data = data.index.format()[0].replace(" ", "_")
 
         data.to_parquet(path=f'/tmp/{latest_bar_data}_{symbol}.pq', compression='snappy')
