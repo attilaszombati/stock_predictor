@@ -7,7 +7,6 @@ import yfinance as yf
 from alpaca.data import TimeFrame
 from alpaca_trade_api import REST
 from flask import Flask, request
-from pandas import Timestamp
 
 from utils.cloud_storage import CloudStorageUtils
 
