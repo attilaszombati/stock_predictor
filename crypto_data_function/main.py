@@ -52,7 +52,7 @@ def historical_data(symbol: str = 'BTC-USD'):
         data.index.rename("timestamp", inplace=True)
         latest_bar_data = data.index.format()[0].replace(" ", "_")
 
-        data.to_parquet(path=f'/tmp/{symbol}.pq', compression='snappy')
+        data.to_parquet(path=f'/tmp/{latest_bar_data}_{symbol}.pq', compression='snappy')
 
         gcs_storage.save_data_to_cloud_storage(bucket_name='crypto_data_collection',
                                                file_name=f'{symbol}/{latest_bar_data}_{symbol}.pq',
