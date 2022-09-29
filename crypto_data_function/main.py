@@ -54,11 +54,12 @@ def historical_data(symbol: str = 'BTC-USD'):
 
         data.to_parquet(path=f'/tmp/{latest_bar_data}_{symbol}.pq', compression='snappy')
 
+        logger.warning(f"Saving historical data for {symbol} to cloud storage for the week {one_week}")
+
         gcs_storage.save_data_to_cloud_storage(bucket_name='crypto_data_collection',
                                                file_name=f'{symbol}/{latest_bar_data}_{symbol}.pq',
                                                parquet_file=f'/tmp/{latest_bar_data}_{symbol}.pq')
 
-        logger.warning(f"Saving historical data for {symbol} to cloud storage for the week {one_week}")
 
 
 @app.route("/", methods=['POST'])
