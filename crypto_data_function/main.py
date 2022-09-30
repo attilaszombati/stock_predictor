@@ -1,9 +1,8 @@
 import logging
 import os
-from datetime import datetime
+from typing import List
 
-import pandas as pd
-import yfinance as yf
+import alpaca_trade_api as tradeapi
 from alpaca.data import TimeFrame
 from alpaca_trade_api import REST
 from flask import Flask, request
@@ -37,33 +36,27 @@ def main(symbol: str = 'BTCUSD'):
     return latest_bar_data
 
 
-def historical_data(symbol: str = 'BTC-USD'):
+def historical_data(symbols: List[str] = ['BTCUSD']):
     gcs_storage = CloudStorageUtils()
 
-    freq = '-7d'
-    dates = pd.date_range(start=datetime.now().date().strftime('%Y-%m-%d'), periods=670, freq=freq,
-                          inclusive=None).strftime('%Y-%m-%d').to_list()
+    import alpaca_trade_api as tradeapi
 
-    shift_dates = [[i, j] for i, j in zip(dates, dates[1:])]
+    aps = tradeapi.REST(key_id=API_KEY,
+                        secret_key=SECRET_KEY,
+                        base_url='https://paper-api.alpaca.markets')
 
-    for one_week in shift_dates:
-        data = yf.download(symbol, start=one_week[1], end=one_week[0], interval="1m", actions=True)
-        data.rename(columns=str.lower, inplace=True)
-        data.index.rename("timestamp", inplace=True)
+    for symbol in symbols:
 
-        logger.warning(f"The index of the data is {data.index}")
+        logger.warning(f"Saving historical data for {symbol}")
+        history = aps.get_crypto_bars([symbol], TimeFrame.Minute, start="2009-01-01T00:00:00-00:00").df
 
-        latest_bar_data = data.index.format()[0].replace(" ", "_")
+        latest_bar_data = history.index.format()[0].replace(" ", "_")
 
-        data.to_parquet(path=f'/tmp/{latest_bar_data}_{symbol}.pq', compression='snappy')
-
-        logger.warning(f"The timestamp is: {latest_bar_data}")
-        logger.warning(f"Saving historical data for {symbol} to cloud storage for the week {one_week}")
+        history.to_parquet(path=f'/tmp/{latest_bar_data}_{symbol}.pq', compression='snappy')
 
         gcs_storage.save_data_to_cloud_storage(bucket_name='crypto_data_collection',
                                                file_name=f'{symbol}/{latest_bar_data}_{symbol}.pq',
                                                parquet_file=f'/tmp/{latest_bar_data}_{symbol}.pq')
-
 
 
 @app.route("/", methods=['POST'])
