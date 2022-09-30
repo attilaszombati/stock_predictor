@@ -39,8 +39,6 @@ def main(symbol: str = 'BTCUSD'):
 def historical_data(symbols: List[str] = ['BTCUSD']):
     gcs_storage = CloudStorageUtils()
 
-    import alpaca_trade_api as tradeapi
-
     aps = tradeapi.REST(key_id=API_KEY,
                         secret_key=SECRET_KEY,
                         base_url='https://paper-api.alpaca.markets')
@@ -67,7 +65,7 @@ def handler():
 
     for symbol in symbols:
         if data.get('SCRAPING_TYPE') == 'history':
-            historical_data(symbol=symbol)
+            historical_data(symbols=symbol)
         else:
             main(symbol=symbol)
 
