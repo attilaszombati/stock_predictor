@@ -91,4 +91,4 @@ jobs:
           google-project-id: GOOGLE_PROJECT_ID
           registry-url: "gcr.io"
           image: $IMAGE_NAME
-          tag: latest,$CIRCLE_SHA1
+          tag: latest,${${CIRCLE_SHA1}:0:7}
