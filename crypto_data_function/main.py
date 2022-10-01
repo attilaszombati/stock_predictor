@@ -45,7 +45,7 @@ def historical_data(symbol: str = 'BTCUSD', start_timestamp: str = '2009-01-01T0
                         secret_key=SECRET_KEY,
                         base_url='https://paper-api.alpaca.markets')
 
-    freq = '1Y'
+    freq = '6m'
 
     time_format = "%Y-%m-%dT%H:%M:%S-00:00"
 
