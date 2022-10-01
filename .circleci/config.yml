@@ -80,6 +80,8 @@ jobs:
       - checkout
       - setup_remote_docker:
           docker_layer_caching: false
+      - env:
+          IMAGE_TAG: ${${CIRCLE_SHA1}:0:7}
       - run:
           name: Build crypto data scraper docker image
           command: ./crypto_data_function/build-image.sh
