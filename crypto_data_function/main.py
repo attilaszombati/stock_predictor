@@ -1,8 +1,10 @@
 import logging
 import os
+from datetime import datetime, timedelta
 from typing import List
 
 import alpaca_trade_api as tradeapi
+import pandas as pd
 from alpaca.data import TimeFrame
 from alpaca_trade_api import REST
 from flask import Flask, request
@@ -43,16 +45,39 @@ def historical_data(symbol: str = 'BTCUSD', start_timestamp: str = '2009-01-01T0
                         secret_key=SECRET_KEY,
                         base_url='https://paper-api.alpaca.markets')
 
-    logger.warning(f"Saving historical data for {symbol}")
-    history = aps.get_crypto_bars([symbol], TimeFrame.Minute, start=start_timestamp).df
+    freq = '-1Y'
 
-    latest_bar_data = history.index.format()[0].replace(" ", "_")
+    time_format = "%Y-%m-%dT%H:%M:%S-00:00"
 
-    history.to_parquet(path=f'/tmp/{latest_bar_data}_{symbol}.pq', compression='snappy')
+    dates = pd.date_range(start=start_timestamp, periods=2, freq=freq,
+                          inclusive=None).strftime(time_format).to_list()
+    shift_dates = [[j, i] for i, j in zip(dates, dates[1:])]
 
-    gcs_storage.save_data_to_cloud_storage(bucket_name='crypto_data_collection',
-                                           file_name=f'{symbol}/{latest_bar_data}_{symbol}.pq',
-                                           parquet_file=f'/tmp/{latest_bar_data}_{symbol}.pq')
+    for start, end in shift_dates:
+        data = aps.get_crypto_bars(
+            symbol=symbol,
+            timeframe=TimeFrame.Minute,
+            start=start,
+            end=end
+        ).df
+        logger.warning(f"Saving historical data from : {start} to : {end} for {symbol} to cloud storage")
+        latest_bar_data = data.index.format()[-1].replace(" ", "_")
+        data.to_parquet(path=f'/tmp/{latest_bar_data}_{symbol}.pq', compression='snappy')
+        logger.warning(f"Saving {latest_bar_data} data for {symbol} to cloud storage")
+
+        gcs_storage.save_data_to_cloud_storage(bucket_name='crypto_data_collection',
+                                               file_name=f'{symbol}/{latest_bar_data}_{symbol}.pq',
+                                               parquet_file=f'/tmp/{latest_bar_data}_{symbol}.pq')
+
+    fingerprint = data.index.format()[-1]
+
+    logger.warning(f"Setting fingerprint for {symbol} to {fingerprint}")
+
+    gcs_storage.set_fingerprint_for_user(
+        bucket_name='crypto_data_collection',
+        file_name=f'{symbol}/fingerprint.csv',
+        fingerprint=fingerprint
+    )
 
 
 @app.route("/", methods=['POST'])
