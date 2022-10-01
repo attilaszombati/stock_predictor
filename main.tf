@@ -3,6 +3,14 @@ provider "google" {
   region  = "us-central1"
 }
 
+data "external" "env" {
+  program = ["${path.module}/env.sh"]
+}
+
+output "foo" {
+  value = data.external.env.result["docker_image_tag"]
+}
+
 resource "google_cloud_run_service" "twitter-scraper" {
   name     = "twitter-scraper"
   location = "us-central1"
@@ -89,7 +97,7 @@ resource "google_cloud_scheduler_job" "crypto-data-scraper-scheduler" {
     http_method = "POST"
     uri         = google_cloud_run_service.crypto-data-scraper.status.0.url
     headers     = { "Content-Type" : "application/json", "User-Agent" : "Google-Cloud-Scheduler" }
-    body        = base64encode("{\"SYMBOLS\": [\"BTCUSD\"], \"SCRAPING_TYPE\": \"history\"}, \"START_DATE\": \"2022-09-01T00:00:00-00:00\"}")
+    body        = base64encode("{\"SYMBOLS\": [\"BTCUSD\"], \"SCRAPING_TYPE\": \"history\", \"START_DATE\": \"2022-09-01T00:00:00-00:00\"}")
     oidc_token {
       service_account_email = google_service_account.cloudrun-invoker.email
     }
