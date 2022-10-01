@@ -84,7 +84,7 @@ jobs:
           name: Build crypto data scraper docker image
           command: ./crypto_data_function/build-image.sh
           environment:
-            IMAGE_TAG: CIRCLE_SHA1
+            IMAGE_TAG: $CIRCLE_BRANCH
       - gcp-gcr/gcr-auth:
           gcloud-service-key: GOOGLE_CLOUD_KEYS
           google-project-id: GOOGLE_PROJECT_ID
