@@ -4,7 +4,7 @@ provider "google" {
 }
 
 data "external" "env" {
-  program = ["${path.module}/env.sh"]
+  program = ["${path.module}/crypto_data_function/env.sh"]
 }
 
 output "foo" {
@@ -41,7 +41,7 @@ resource "google_cloud_run_service" "crypto-data-scraper" {
   template {
     spec {
       containers {
-        image = "gcr.io/attila-szombati-sandbox/crypto-data-scraper:latest"
+        image = "gcr.io/attila-szombati-sandbox/crypto-data-scraper:${data.external.env.result["docker_image_tag"]}"
         ports {
           container_port = 8080
         }

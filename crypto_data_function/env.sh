@@ -8,6 +8,6 @@
 
 cat <<EOF
 {
-  "docker_image_tag": "${${CIRCLE_SHA1}:0:7}"
+  "docker_image_tag": "$CIRCLE_SHA1"
 }
 EOF
