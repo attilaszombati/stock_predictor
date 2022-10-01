@@ -90,4 +90,5 @@ jobs:
       - gcp-gcr/push-image:
           google-project-id: GOOGLE_PROJECT_ID
           registry-url: "gcr.io"
-          tag: $IMAGE_NAME,$CIRCLE_SHA1
+          image: $IMAGE_NAME
+          tag: latest,$CIRCLE_SHA1
