@@ -48,9 +48,11 @@ def historical_data(symbol: str = 'BTCUSD', start_timestamp: str = '2009-01-01T0
     freq = '6m'
 
     time_format = "%Y-%m-%dT%H:%M:%S-00:00"
+    offset_time = datetime.now() + timedelta(weeks=26)
+    end_timestamp = offset_time.strftime(time_format)
 
-    dates = pd.date_range(start=start_timestamp, periods=15, freq=freq,
-                          inclusive=None).strftime(time_format).to_list()
+    dates = pd.date_range(start=start_timestamp, end=end_timestamp, freq=freq,
+                          inclusive='both').strftime(time_format).to_list()
     shift_dates = [[i, j] for i, j in zip(dates, dates[1:])]
 
     for start, end in shift_dates:
