@@ -45,29 +45,30 @@ def historical_data(symbol: str = 'BTCUSD', start_timestamp: str = '2009-01-01T0
                         secret_key=SECRET_KEY,
                         base_url='https://paper-api.alpaca.markets')
 
-    freq = '-1Y'
+    freq = '1Y'
 
     time_format = "%Y-%m-%dT%H:%M:%S-00:00"
 
-    dates = pd.date_range(start=start_timestamp, periods=2, freq=freq,
+    dates = pd.date_range(start=start_timestamp, periods=15, freq=freq,
                           inclusive=None).strftime(time_format).to_list()
-    shift_dates = [[j, i] for i, j in zip(dates, dates[1:])]
+    shift_dates = [[i, j] for i, j in zip(dates, dates[1:])]
 
     for start, end in shift_dates:
+        logger.warning(f"Saving historical data from : {start} to : {end} for {symbol} to cloud storage")
         data = aps.get_crypto_bars(
             symbol=symbol,
             timeframe=TimeFrame.Minute,
             start=start,
             end=end
         ).df
-        logger.warning(f"Saving historical data from : {start} to : {end} for {symbol} to cloud storage")
-        latest_bar_data = data.index.format()[-1].replace(" ", "_")
-        data.to_parquet(path=f'/tmp/{latest_bar_data}_{symbol}.pq', compression='snappy')
-        logger.warning(f"Saving {latest_bar_data} data for {symbol} to cloud storage")
+        if not data.empty:
+            latest_bar_data = data.index.format()[-1].replace(" ", "_")
+            data.to_parquet(path=f'/tmp/{latest_bar_data}_{symbol}.pq', compression='snappy')
+            logger.warning(f"Saving {latest_bar_data} data for {symbol} to cloud storage")
 
-        gcs_storage.save_data_to_cloud_storage(bucket_name='crypto_data_collection',
-                                               file_name=f'{symbol}/{latest_bar_data}_{symbol}.pq',
-                                               parquet_file=f'/tmp/{latest_bar_data}_{symbol}.pq')
+            gcs_storage.save_data_to_cloud_storage(bucket_name='crypto_data_collection',
+                                                   file_name=f'{symbol}/{latest_bar_data}_{symbol}.pq',
+                                                   parquet_file=f'/tmp/{latest_bar_data}_{symbol}.pq')
 
     fingerprint = data.index.format()[-1]
 
@@ -97,4 +98,5 @@ def handler():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+    # app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+    historical_data(symbol='BTCUSD', start_timestamp='2009-01-01T00:00:00-00:00')
