@@ -77,7 +77,7 @@ jobs:
     docker:
       - image: circleci/python:3.9.1
     environment:
-      IMAGE_TAG: ${${CIRCLE_SHA1}:0:7}
+      IMAGE_TAG: $CIRCLE_SHA1
     steps:
       - checkout
       - setup_remote_docker:
