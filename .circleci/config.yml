@@ -82,9 +82,7 @@ jobs:
           docker_layer_caching: false
       - run:
           name: Build crypto data scraper docker image
-          command: ./crypto_data_function/build-image.sh
-          environment:
-            IMAGE_TAG: $CIRCLE_BRANCH
+          command: echo 'export IMAGE_TAG=$CIRCLE_BRANCH' >> "$BASH_ENV" && ./crypto_data_function/build-image.sh
       - gcp-gcr/gcr-auth:
           gcloud-service-key: GOOGLE_CLOUD_KEYS
           google-project-id: GOOGLE_PROJECT_ID
