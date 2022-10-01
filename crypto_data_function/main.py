@@ -45,10 +45,10 @@ def historical_data(symbol: str = 'BTCUSD', start_timestamp: str = '2009-01-01T0
                         secret_key=SECRET_KEY,
                         base_url='https://paper-api.alpaca.markets')
 
-    freq = '6m'
+    freq = '3m'
 
     time_format = "%Y-%m-%dT%H:%M:%S-00:00"
-    offset_time = datetime.now() + timedelta(weeks=26)
+    offset_time = datetime.now() + timedelta(weeks=15)
     end_timestamp = offset_time.strftime(time_format)
 
     dates = pd.date_range(start=start_timestamp, end=end_timestamp, freq=freq,
