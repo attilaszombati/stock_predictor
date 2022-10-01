@@ -36,25 +36,23 @@ def main(symbol: str = 'BTCUSD'):
     return latest_bar_data
 
 
-def historical_data(symbols: List[str] = ['BTCUSD'], start_timestamp: str = '2009-01-01T00:00:00-00:00'):
+def historical_data(symbol: str = 'BTCUSD', start_timestamp: str = '2009-01-01T00:00:00-00:00'):
     gcs_storage = CloudStorageUtils()
 
     aps = tradeapi.REST(key_id=API_KEY,
                         secret_key=SECRET_KEY,
                         base_url='https://paper-api.alpaca.markets')
 
-    for symbol in symbols:
+    logger.warning(f"Saving historical data for {symbol}")
+    history = aps.get_crypto_bars([symbol], TimeFrame.Minute, start=start_timestamp).df
 
-        logger.warning(f"Saving historical data for {symbol}")
-        history = aps.get_crypto_bars([symbol], TimeFrame.Minute, start=start_timestamp).df
+    latest_bar_data = history.index.format()[0].replace(" ", "_")
 
-        latest_bar_data = history.index.format()[0].replace(" ", "_")
+    history.to_parquet(path=f'/tmp/{latest_bar_data}_{symbol}.pq', compression='snappy')
 
-        history.to_parquet(path=f'/tmp/{latest_bar_data}_{symbol}.pq', compression='snappy')
-
-        gcs_storage.save_data_to_cloud_storage(bucket_name='crypto_data_collection',
-                                               file_name=f'{symbol}/{latest_bar_data}_{symbol}.pq',
-                                               parquet_file=f'/tmp/{latest_bar_data}_{symbol}.pq')
+    gcs_storage.save_data_to_cloud_storage(bucket_name='crypto_data_collection',
+                                           file_name=f'{symbol}/{latest_bar_data}_{symbol}.pq',
+                                           parquet_file=f'/tmp/{latest_bar_data}_{symbol}.pq')
 
 
 @app.route("/", methods=['POST'])
@@ -66,7 +64,7 @@ def handler():
 
     for symbol in symbols:
         if data.get('SCRAPING_TYPE') == 'history':
-            historical_data(symbols=symbol, start_timestamp=start_timestamp)
+            historical_data(symbol=symbol, start_timestamp=start_timestamp)
         else:
             main(symbol=symbol)
 
