@@ -76,8 +76,6 @@ jobs:
   build_push_image_crypto_data_scraper:
     docker:
       - image: circleci/python:3.9.1
-    environment:
-      IMAGE_TAG: $CIRCLE_SHA1
     steps:
       - checkout
       - setup_remote_docker:
@@ -85,6 +83,8 @@ jobs:
       - run:
           name: Build crypto data scraper docker image
           command: ./crypto_data_function/build-image.sh
+          environment:
+            IMAGE_TAG: $CIRCLE_SHA1
       - gcp-gcr/gcr-auth:
           gcloud-service-key: GOOGLE_CLOUD_KEYS
           google-project-id: GOOGLE_PROJECT_ID
