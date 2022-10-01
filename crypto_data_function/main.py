@@ -36,7 +36,7 @@ def main(symbol: str = 'BTCUSD'):
     return latest_bar_data
 
 
-def historical_data(symbols: List[str] = ['BTCUSD']):
+def historical_data(symbols: List[str] = ['BTCUSD'], start_timestamp: str = '2009-01-01T00:00:00-00:00'):
     gcs_storage = CloudStorageUtils()
 
     aps = tradeapi.REST(key_id=API_KEY,
@@ -46,7 +46,7 @@ def historical_data(symbols: List[str] = ['BTCUSD']):
     for symbol in symbols:
 
         logger.warning(f"Saving historical data for {symbol}")
-        history = aps.get_crypto_bars([symbol], TimeFrame.Minute, start="2009-01-01T00:00:00-00:00").df
+        history = aps.get_crypto_bars([symbol], TimeFrame.Minute, start=start_timestamp).df
 
         latest_bar_data = history.index.format()[0].replace(" ", "_")
 
@@ -62,10 +62,11 @@ def handler():
     data = request.get_json()
     logger.warning(f"The data is : {data}")
     symbols = data.get('SYMBOLS')
+    start_timestamp = data.get('START_DATE')
 
     for symbol in symbols:
         if data.get('SCRAPING_TYPE') == 'history':
-            historical_data(symbols=symbol)
+            historical_data(symbols=symbol, start_timestamp=start_timestamp)
         else:
             main(symbol=symbol)
 
