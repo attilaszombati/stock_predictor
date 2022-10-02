@@ -1,7 +1,6 @@
 import logging
 import os
 from datetime import datetime, timedelta
-from typing import List
 
 import alpaca_trade_api as tradeapi
 import pandas as pd
