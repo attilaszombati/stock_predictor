@@ -7,14 +7,17 @@ import pandas as pd
 from alpaca.data import TimeFrame
 from flask import Flask, request
 
+from utils.secret_manager import SecretManger
 from utils.cloud_storage import CloudStorageUtils
 
 logger = logging.getLogger('twitter-scraper')
 
 app = Flask(__name__)
 
-API_KEY = 'AKRKQK0FZP17RH0TS516'
-SECRET_KEY = 'GszzkYig0nXUMquNyz0Viw1R95oiSKi0KjJOcz4C'
+secret_manager = SecretManger()
+
+API_KEY = secret_manager.get_secret(secret_name='projects/48536241023/secrets/alpaca-api/versions/2')
+SECRET_KEY = secret_manager.get_secret(secret_name='projects/48536241023/secrets/alpaca-secret-key/versions/2')
 
 
 def fingerprint_is_up_to_date(fingerprint: str = None) -> bool:
