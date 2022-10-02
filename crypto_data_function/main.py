@@ -18,11 +18,26 @@ API_KEY = 'AKRKQK0FZP17RH0TS516'
 SECRET_KEY = 'GszzkYig0nXUMquNyz0Viw1R95oiSKi0KjJOcz4C'
 
 
-def main(symbol: str = 'BTCUSD'):
+def fingerprint_is_up_to_date(fingerprint: str = None) -> bool:
+    now_timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S-00:00")
+
+    return now_timestamp < fingerprint
+
+
+def main(api, symbol: str = 'BTCUSD'):
     gcs_storage = CloudStorageUtils()
-    alpaca_api = REST(API_KEY, SECRET_KEY, api_version='v2')
+
+    fingerprint = gcs_storage.get_fingerprint_for_user(
+        bucket_name='crypto_data_collection',
+        file_name=f'{symbol}/fingerprint.csv'
+    )
+
+    if not fingerprint_is_up_to_date(fingerprint=fingerprint):
+        historical_data(api=api, symbol=symbol, start_timestamp=fingerprint)
+
     time_frame = TimeFrame.Minute
-    data = alpaca_api.get_crypto_bars(
+
+    data = api.get_crypto_bars(
         symbol=symbol,
         timeframe=time_frame.value
     ).df.iloc[[-1]]
@@ -37,12 +52,8 @@ def main(symbol: str = 'BTCUSD'):
     return latest_bar_data
 
 
-def historical_data(symbol: str = 'BTCUSD', start_timestamp: str = '2009-01-01T00:00:00-00:00'):
+def historical_data(api, symbol: str = 'BTCUSD', start_timestamp: str = '2009-01-01T00:00:00-00:00'):
     gcs_storage = CloudStorageUtils()
-
-    aps = tradeapi.REST(key_id=API_KEY,
-                        secret_key=SECRET_KEY,
-                        base_url='https://paper-api.alpaca.markets')
 
     freq = '3m'
 
@@ -56,7 +67,7 @@ def historical_data(symbol: str = 'BTCUSD', start_timestamp: str = '2009-01-01T0
 
     for start, end in shift_dates:
         logger.warning(f"Saving historical data from : {start} to : {end} for {symbol} to cloud storage")
-        data = aps.get_crypto_bars(
+        data = api.get_crypto_bars(
             symbol=symbol,
             timeframe=TimeFrame.Minute,
             start=start,
@@ -89,11 +100,15 @@ def handler():
     symbols = data.get('SYMBOLS')
     start_timestamp = data.get('START_DATE')
 
+    api = tradeapi.REST(key_id=API_KEY,
+                        secret_key=SECRET_KEY,
+                        base_url='https://paper-api.alpaca.markets')
+
     for symbol in symbols:
         if data.get('SCRAPING_TYPE') == 'history':
-            historical_data(symbol=symbol, start_timestamp=start_timestamp)
+            historical_data(api=api, symbol=symbol, start_timestamp=start_timestamp)
         else:
-            main(symbol=symbol)
+            main(api=api, symbol=symbol)
 
     return "OK"
 
