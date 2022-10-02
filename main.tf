@@ -84,7 +84,7 @@ resource "google_cloud_scheduler_job" "cloudrun-scheduler" {
 resource "google_cloud_scheduler_job" "crypto-data-scraper-scheduler" {
   name             = "crypto-data-scraper-scheduler"
   description      = "Invoke cloud run"
-  schedule         = "1 * 5 1 *"
+  schedule         = "* * * * *"
   time_zone        = "Europe/Budapest"
   attempt_deadline = "320s"
 
