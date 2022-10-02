@@ -16,10 +16,8 @@ app = Flask(__name__)
 
 secret_manager = SecretManger()
 
-API_KEY = secret_manager.get_secret(
-    secret_name='projects/48536241023/secrets/alpaca-api/versions/2').payload.data.decode("UTF-8")
-SECRET_KEY = secret_manager.get_secret(
-    secret_name='projects/48536241023/secrets/alpaca-secret-key/versions/2').payload.data.decode("UTF-8")
+API_KEY = secret_manager.get_secret(secret_name='projects/48536241023/secrets/alpaca-api/versions/2')
+SECRET_KEY = secret_manager.get_secret(secret_name='projects/48536241023/secrets/alpaca-secret-key/versions/2')
 
 
 def fingerprint_is_up_to_date(fingerprint: str = None) -> bool:
