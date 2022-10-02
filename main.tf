@@ -24,7 +24,7 @@ resource "google_cloud_run_service" "twitter-scraper" {
         }
       }
       timeout_seconds      = 540
-      service_account_name = google_service_account.storage-admin.email
+      service_account_name = google_service_account.cloud-run-service-account.email
     }
   }
   traffic {
