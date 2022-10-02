@@ -71,7 +71,7 @@ def historical_data(api, symbol: str = 'BTCUSD', start_timestamp: str = '2009-01
     freq = '3m'
 
     if update_history:
-        offset_time = datetime.now() + timedelta(days=2)
+        offset_time = datetime.now() + timedelta(days=1)
         end_timestamp = offset_time.strftime(time_format)
         range_config = {
             'start': start_timestamp,
