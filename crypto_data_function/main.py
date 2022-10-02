@@ -33,9 +33,9 @@ def main(api, symbol: str = 'BTCUSD'):
 
     logger.warning(f'Current fingerprint for {symbol} is {fingerprint}')
 
-    if not fingerprint_is_up_to_date(fingerprint=fingerprint, update_history=True):
+    if not fingerprint_is_up_to_date(fingerprint=fingerprint):
         logger.warning(f'Fingerprint is not up to date for {symbol}')
-        historical_data(api=api, symbol=symbol, start_timestamp=fingerprint)
+        historical_data(api=api, symbol=symbol, start_timestamp=fingerprint, update_history=True)
 
     time_frame = TimeFrame.Minute
 
