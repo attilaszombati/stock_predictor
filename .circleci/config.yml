@@ -79,17 +79,14 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker:
-          docker_layer_caching: false
+          docker_layer_caching: true
+      - run:
+          name: Build crypto data scraper docker image
+          command: ./crypto_data_function/build-image.sh
       - gcp-gcr/gcr-auth:
           gcloud-service-key: GOOGLE_CLOUD_KEYS
           google-project-id: GOOGLE_PROJECT_ID
           google-compute-zone: GOOGLE_COMPUTE_ZONE
-      - run:
-          name: Build crypto data scraper docker image
-          command: ./crypto_data_function/build-image.sh
-          environment:
-            GOOGLE_CLOUD_KEYS: GOOGLE_CLOUD_KEYS
-            GOOGLE_PROJECT_ID: GOOGLE_PROJECT_ID
       - gcp-gcr/push-image:
           google-project-id: GOOGLE_PROJECT_ID
           registry-url: "gcr.io"
