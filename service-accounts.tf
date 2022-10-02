@@ -12,9 +12,9 @@ resource "google_project_iam_binding" "cloud-run-invoker-iam" {
   ]
 }
 
-resource "google_service_account" "storage-admin" {
-  account_id   = "cloud-storage-admin"
-  display_name = "SA for storage management"
+resource "google_service_account" "cloud-run-service-account" {
+  account_id   = "cloud-run-service-account"
+  display_name = "Cloud run related service account"
 }
 
 resource "google_project_iam_binding" "storage-admin-iam" {
@@ -22,6 +22,15 @@ resource "google_project_iam_binding" "storage-admin-iam" {
   role    = "roles/storage.admin"
 
   members = [
-    "serviceAccount:${google_service_account.storage-admin.email}",
+    "serviceAccount:${google_service_account.cloud-run-service-account.email}",
+  ]
+}
+
+resource "google_project_iam_binding" "secret-manager-reader" {
+  project = "attila-szombati-sandbox"
+  role    = "roles/secretmanager.admin"
+
+  members = [
+    "serviceAccount:${google_service_account.cloud-run-service-account.email}",
   ]
 }
