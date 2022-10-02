@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 import alpaca_trade_api as tradeapi
 import pandas as pd
 from alpaca.data import TimeFrame
-from alpaca_trade_api import REST
 from flask import Flask, request
 
 from utils.cloud_storage import CloudStorageUtils
