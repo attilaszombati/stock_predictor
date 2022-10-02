@@ -26,11 +26,12 @@ resource "google_project_iam_binding" "storage-admin-iam" {
   ]
 }
 
-resource "google_project_iam_binding" "secret-manager-reader" {
+resource "google_project_iam_member" "cloud-run-roles" {
   project = "attila-szombati-sandbox"
-  role    = "roles/secretmanager.admin"
-
-  members = [
-    "serviceAccount:${google_service_account.cloud-run-service-account.email}",
-  ]
+  for_each = toset([
+    "roles/secretmanager.admin",
+    "roles/storage.admin"
+  ])
+  role   = each.key
+  member = "serviceAccount:${google_service_account.cloud-run-service-account.email}"
 }
