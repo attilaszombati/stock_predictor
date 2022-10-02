@@ -17,15 +17,6 @@ resource "google_service_account" "cloud-run-service-account" {
   display_name = "Cloud run related service account"
 }
 
-resource "google_project_iam_binding" "storage-admin-iam" {
-  project = "attila-szombati-sandbox"
-  role    = "roles/storage.admin"
-
-  members = [
-    "serviceAccount:${google_service_account.cloud-run-service-account.email}",
-  ]
-}
-
 resource "google_project_iam_member" "cloud-run-roles" {
   project = "attila-szombati-sandbox"
   for_each = toset([
