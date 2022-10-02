@@ -32,7 +32,10 @@ def main(api, symbol: str = 'BTCUSD'):
         file_name=f'{symbol}/fingerprint.csv'
     )
 
+    logger.warning(f"Current fingerprint for {symbol} is {fingerprint}")
+
     if not fingerprint_is_up_to_date(fingerprint=fingerprint):
+        logger.warning(f"Fingerprint is not up to date for {symbol}")
         historical_data(api=api, symbol=symbol, start_timestamp=fingerprint)
 
     time_frame = TimeFrame.Minute
@@ -49,7 +52,17 @@ def main(api, symbol: str = 'BTCUSD'):
                                            file_name=f'{symbol}/{latest_bar_data}_{symbol}.pq',
                                            parquet_file=f'/tmp/{latest_bar_data}_{symbol}.pq')
 
-    return latest_bar_data
+    updated_fingerprint = data.index.format()[-1]
+
+    logger.warning(f"Setting fingerprint for {symbol} to {updated_fingerprint}")
+
+    gcs_storage.set_fingerprint_for_user(
+        bucket_name='crypto_data_collection',
+        file_name=f'{symbol}/fingerprint.csv',
+        fingerprint=updated_fingerprint
+    )
+
+    return updated_fingerprint
 
 
 def historical_data(api, symbol: str = 'BTCUSD', start_timestamp: str = '2009-01-01T00:00:00-00:00'):
