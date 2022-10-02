@@ -7,7 +7,7 @@ import pandas as pd
 from alpaca.data import TimeFrame
 from flask import Flask, request
 
-from crypto_data_function.utils.secret_manager import SecretManger
+from utils.secret_manager import SecretManger
 from utils.cloud_storage import CloudStorageUtils
 
 logger = logging.getLogger('twitter-scraper')
