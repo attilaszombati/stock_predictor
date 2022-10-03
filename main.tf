@@ -97,7 +97,7 @@ resource "google_cloud_scheduler_job" "crypto-data-scraper-scheduler" {
     http_method = "POST"
     uri         = google_cloud_run_service.crypto-data-scraper.status.0.url
     headers     = { "Content-Type" : "application/json", "User-Agent" : "Google-Cloud-Scheduler" }
-    body        = base64encode("{\"SYMBOLS\": [\"BTCUSD\", \"DOGEUSD\", \"ETHUSD\", \"SHIBUSD\", \"USDTUSD\"], \"SCRAPING_TYPE\": \"news\", \"START_DATE\": \"2009-01-01T00:00:00-00:00\"}")
+    body        = base64encode("{\"SYMBOLS\": [\"DOGEUSD\"], \"SCRAPING_TYPE\": \"history\", \"START_DATE\": \"2009-01-01T00:00:00-00:00\"}")
     oidc_token {
       service_account_email = google_service_account.cloudrun-invoker.email
     }
