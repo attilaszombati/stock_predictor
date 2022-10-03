@@ -56,7 +56,8 @@ def main(api, symbol: str = 'BTCUSD'):
         timeframe=time_frame.value
     ).df.iloc[[-1]]
 
-    latest_bar_data = data.index.format()[-1].replace(' ', '_')
+    index_timestamp_raw = data.index.format()[-1]
+    latest_bar_data = index_timestamp_raw.replace(' ', '_')
     converted_data = convert_columns_to_float64(df=data, columns=['open', 'high', 'low', 'close', 'volume'])
 
     converted_data.to_parquet(path=f'/tmp/{latest_bar_data}_{symbol}.pq', compression='snappy')
@@ -66,7 +67,7 @@ def main(api, symbol: str = 'BTCUSD'):
                                            file_name=f'{symbol}/{latest_bar_data}_{symbol}.pq',
                                            parquet_file=f'/tmp/{latest_bar_data}_{symbol}.pq')
 
-    updated_fingerprint = data.index.format()[-1]
+    updated_fingerprint = index_timestamp_raw
 
     logger.warning(f'Setting fingerprint for {symbol} to {updated_fingerprint}')
 
@@ -116,7 +117,8 @@ def historical_data(api, symbol: str = 'BTCUSD', start_timestamp: str = '2009-01
         ).df
 
         if not data.empty:
-            latest_bar_data = data.index.format()[-1].replace(' ', '_')
+            index_timestamp_raw = data.index.format()[-1]
+            latest_bar_data = index_timestamp_raw.replace(' ', '_')
             converted_data = convert_columns_to_float64(df=data, columns=['open', 'high', 'low', 'close', 'volume'])
             converted_data.to_parquet(path=f'/tmp/{latest_bar_data}_{symbol}.pq', compression='snappy')
             logger.warning(f'Saving {latest_bar_data} data for {symbol} to cloud storage')
@@ -125,7 +127,7 @@ def historical_data(api, symbol: str = 'BTCUSD', start_timestamp: str = '2009-01
                                                    file_name=f'{symbol}/{latest_bar_data}_{symbol}.pq',
                                                    parquet_file=f'/tmp/{latest_bar_data}_{symbol}.pq')
 
-    fingerprint = data.index.format()[-1]
+    fingerprint = index_timestamp_raw
 
     logger.warning(f'Setting fingerprint for {symbol} to {fingerprint}')
 
