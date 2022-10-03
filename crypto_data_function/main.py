@@ -29,6 +29,7 @@ def fingerprint_is_up_to_date(fingerprint: str = None) -> bool:
 def convert_columns_to_float64(df, columns):
     for column in columns:
         df[column] = df[column].astype('float64')
+    df["timestamp"] = df["timestamp"].astype(int) // 10 ** 9
     df.reset_index(inplace=True)
 
     return df
