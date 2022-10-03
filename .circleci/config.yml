@@ -1,9 +1,9 @@
 version: 2.1
 
 orbs:
-  terraform: cimg/terraform@3.1.0
-  python: cimg/python@2.0.3
-  gcp-gcr: cimg/gcp-gcr@0.15.0
+  terraform: circleci/terraform@3.1.0
+  python: cimg/python:3.9.1
+  gcp-gcr: circleci/gcp-gcr@0.15.0
 
 workflows:
   deploy_infrastructure:
