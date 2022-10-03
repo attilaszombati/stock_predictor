@@ -75,7 +75,7 @@ jobs:
 
   build_push_image_crypto_data_scraper:
     docker:
-      - image: circleci/python:3.9.1
+      - image: cimg/python:3.9.1
     steps:
       - checkout
       - setup_remote_docker:
