@@ -26,6 +26,13 @@ def fingerprint_is_up_to_date(fingerprint: str = None) -> bool:
     return now_timestamp < fingerprint
 
 
+def convert_columns_to_float64(df, columns):
+    for column in columns:
+        df[column] = df[column].astype('float64')
+
+    return df
+
+
 def main(api, symbol: str = 'BTCUSD'):
     gcs_storage = CloudStorageUtils()
 
@@ -46,15 +53,18 @@ def main(api, symbol: str = 'BTCUSD'):
         symbol=symbol,
         timeframe=time_frame.value
     ).df.iloc[[-1]]
-    latest_bar_data = data.index.format()[0].replace(' ', '_')
-    data.to_parquet(path=f'/tmp/{latest_bar_data}_{symbol}.pq', compression='snappy')
+
+    converted_data = convert_columns_to_float64(df=data, columns=['open', 'high', 'low', 'close', 'volume'])
+
+    latest_bar_data = converted_data.index.format()[0].replace(' ', '_')
+    converted_data.to_parquet(path=f'/tmp/{latest_bar_data}_{symbol}.pq', compression='snappy')
     logger.warning(f'Saving {latest_bar_data} data for {symbol} to cloud storage')
 
     gcs_storage.save_data_to_cloud_storage(bucket_name='crypto_data_collection',
                                            file_name=f'{symbol}/{latest_bar_data}_{symbol}.pq',
                                            parquet_file=f'/tmp/{latest_bar_data}_{symbol}.pq')
 
-    updated_fingerprint = data.index.format()[-1]
+    updated_fingerprint = converted_data.index.format()[-1]
 
     logger.warning(f'Setting fingerprint for {symbol} to {updated_fingerprint}')
 
@@ -102,16 +112,18 @@ def historical_data(api, symbol: str = 'BTCUSD', start_timestamp: str = '2009-01
             start=start,
             end=end
         ).df
+
         if not data.empty:
-            latest_bar_data = data.index.format()[-1].replace(' ', '_')
-            data.to_parquet(path=f'/tmp/{latest_bar_data}_{symbol}.pq', compression='snappy')
+            converted_data = convert_columns_to_float64(df=data, columns=['open', 'high', 'low', 'close', 'volume'])
+            latest_bar_data = converted_data.index.format()[-1].replace(' ', '_')
+            converted_data.to_parquet(path=f'/tmp/{latest_bar_data}_{symbol}.pq', compression='snappy')
             logger.warning(f'Saving {latest_bar_data} data for {symbol} to cloud storage')
 
             gcs_storage.save_data_to_cloud_storage(bucket_name='crypto_data_collection',
                                                    file_name=f'{symbol}/{latest_bar_data}_{symbol}.pq',
                                                    parquet_file=f'/tmp/{latest_bar_data}_{symbol}.pq')
 
-    fingerprint = data.index.format()[-1]
+    fingerprint = converted_data.index.format()[-1]
 
     logger.warning(f'Setting fingerprint for {symbol} to {fingerprint}')
 
