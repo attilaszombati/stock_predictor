@@ -52,10 +52,6 @@ class TwitterScraperBase:
     def start_scraping(query):
         tweets = sntwitter.TwitterSearchScraper(query).get_items()
         for tweet in tweets:
-            print(tweet.__dict__)
-            print("X" * 50)
-            print(tweet.hashtags)
-            print("X" * 50)
             yield tweet
 
     @staticmethod
@@ -68,6 +64,11 @@ class TwitterScraperBase:
     def check_quoted_tweet(data):
         if data is not None:
             return str(data.url)
+        return data
+    @staticmethod
+    def check_cashtaged_tweet(data):
+        if data is not None:
+            return ','.join(link for link in data)
         return data
 
     @staticmethod
@@ -92,7 +93,7 @@ class TwitterScraperBase:
         yield from (
             user_models.get(self.user)(
                 id=data.id,
-                cashtags=data.cashtags,
+                cashtags=self.check_cashtaged_tweet(data.cashtags),
                 content=data.content,
                 conversation_id=data.conversationId,
                 coordinates=data.coordinates,
