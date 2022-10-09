@@ -105,7 +105,7 @@ resource "google_cloud_scheduler_job" "crypto-data-scraper-scheduler" {
 }
 
 resource "google_cloud_scheduler_job" "stock-data-scraper-scheduler" {
-  name             = "crypto-data-scraper-scheduler"
+  name             = "stock-data-scraper-scheduler"
   description      = "Invoke cloud run"
   schedule         = "0 * * * *"
   time_zone        = "Europe/Budapest"
