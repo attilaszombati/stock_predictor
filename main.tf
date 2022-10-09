@@ -97,7 +97,30 @@ resource "google_cloud_scheduler_job" "crypto-data-scraper-scheduler" {
     http_method = "POST"
     uri         = google_cloud_run_service.crypto-data-scraper.status.0.url
     headers     = { "Content-Type" : "application/json", "User-Agent" : "Google-Cloud-Scheduler" }
-    body        = base64encode("{\"SYMBOLS\": [\"DOGEUSD\"], \"SCRAPING_TYPE\": \"history\", \"START_DATE\": \"2009-01-01T00:00:00-00:00\"}")
+    body        = base64encode("{\"SYMBOLS\": [\"DOGEUSD\"], \"SCRAPING_TYPE\": \"history\", \"START_DATE\": \"2009-01-01T00:00:00-00:00\", \"BUCKET_NAME\": \"crypto_data_collection\", \"SYMBOL_TYPE\": \"crypto\"}")
+    oidc_token {
+      service_account_email = google_service_account.cloudrun-invoker.email
+    }
+  }
+}
+
+resource "google_cloud_scheduler_job" "stock-data-scraper-scheduler" {
+  name             = "crypto-data-scraper-scheduler"
+  description      = "Invoke cloud run"
+  schedule         = "0 * * * *"
+  time_zone        = "Europe/Budapest"
+  attempt_deadline = "320s"
+
+  retry_config {
+    retry_count = 1
+  }
+
+
+  http_target {
+    http_method = "POST"
+    uri         = google_cloud_run_service.crypto-data-scraper.status.0.url
+    headers     = { "Content-Type" : "application/json", "User-Agent" : "Google-Cloud-Scheduler" }
+    body        = base64encode("{\"SYMBOLS\": [\"TSLA\"], \"SCRAPING_TYPE\": \"history\", \"START_DATE\": \"2009-01-01T00:00:00-00:00\", \"BUCKET_NAME\": \"crypto_data_collection\", \"SYMBOL_TYPE\": \"stock\"}")
     oidc_token {
       service_account_email = google_service_account.cloudrun-invoker.email
     }
