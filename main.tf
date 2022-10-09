@@ -120,7 +120,7 @@ resource "google_cloud_scheduler_job" "stock-data-scraper-scheduler" {
     http_method = "POST"
     uri         = google_cloud_run_service.alpaca-data-scraper.status.0.url
     headers     = { "Content-Type" : "application/json", "User-Agent" : "Google-Cloud-Scheduler" }
-    body        = base64encode("{\"SYMBOLS\": [\"TSLA\"], \"SCRAPING_TYPE\": \"history\", \"START_DATE\": \"2009-01-01T00:00:00-00:00\", \"BUCKET_NAME\": \"crypto_data_collection\", \"SYMBOL_TYPE\": \"stock\"}")
+    body        = base64encode("{\"SYMBOLS\": [\"TSLA\"], \"SCRAPING_TYPE\": \"history\", \"START_DATE\": \"2009-01-01T00:00:00-00:00\", \"BUCKET_NAME\": \"stock_data_collection\", \"SYMBOL_TYPE\": \"stock\"}")
     oidc_token {
       service_account_email = google_service_account.cloudrun-invoker.email
     }
