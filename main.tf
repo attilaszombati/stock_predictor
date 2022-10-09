@@ -34,14 +34,14 @@ resource "google_cloud_run_service" "twitter-scraper" {
   autogenerate_revision_name = true
 }
 
-resource "google_cloud_run_service" "crypto-data-scraper" {
-  name     = "crypto-data-scraper"
+resource "google_cloud_run_service" "alpaca-data-scraper" {
+  name     = "alpaca-data-scraper"
   location = "us-central1"
 
   template {
     spec {
       containers {
-        image = "gcr.io/attila-szombati-sandbox/crypto-data-scraper:${data.external.env.result["docker_image_tag"]}"
+        image = "gcr.io/attila-szombati-sandbox/alpaca-data-scraper:${data.external.env.result["docker_image_tag"]}"
         ports {
           container_port = 8080
         }
