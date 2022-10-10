@@ -20,8 +20,11 @@ API_KEY = secret_manager.get_secret(secret_name='projects/48536241023/secrets/al
 SECRET_KEY = secret_manager.get_secret(secret_name='projects/48536241023/secrets/alpaca-secret-key/versions/2')
 
 
-def fingerprint_is_up_to_date(fingerprint: str = None) -> bool:
-    now_timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S-00:00')
+def fingerprint_is_up_to_date(fingerprint: str = None, symbol_type: str = 'crypto') -> bool:
+    if symbol_type == 'crypto':
+        now_timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S-00:00')
+    else:
+        now_timestamp = (datetime.now() - timedelta(hours=2, minutes=15)).strftime('%Y-%m-%d %H:%M:%S-00:00')
 
     return now_timestamp < fingerprint
 
@@ -45,7 +48,7 @@ def main(api, symbol: str = 'BTCUSD', bucket_name='crypto_data_collection', symb
 
     logger.warning(f'Current fingerprint for {symbol} is {fingerprint}')
 
-    if not fingerprint_is_up_to_date(fingerprint=fingerprint):
+    if not fingerprint_is_up_to_date(fingerprint=fingerprint, symbol_type=symbol_type):
         logger.warning(f'Fingerprint is not up to date for {symbol}')
         historical_data(api=api, symbol=symbol, start_timestamp=fingerprint, update_history=True)
 
@@ -99,7 +102,10 @@ def historical_data(
     freq = '3m'
 
     if update_history:
-        offset_time = datetime.now() + timedelta(days=1)
+        if symbol_type == 'crypto':
+            offset_time = datetime.now() + timedelta(days=1)
+        else:
+            offset_time = datetime.now() - timedelta(hours=2, minutes=15)
         end_timestamp = offset_time.strftime(time_format)
         range_config = {
             'start': start_timestamp,
