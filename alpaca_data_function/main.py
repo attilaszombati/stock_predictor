@@ -113,7 +113,10 @@ def historical_data(
             'inclusive': 'both'
         }
     else:
-        offset_time = datetime.now() + timedelta(weeks=15)
+        if symbol_type == 'crypto':
+            offset_time = datetime.now() + timedelta(weeks=15)
+        else:
+            offset_time = datetime.now() - timedelta(hours=2, minutes=15)
         end_timestamp = offset_time.strftime(time_format)
         range_config = {
             'start': start_timestamp,
