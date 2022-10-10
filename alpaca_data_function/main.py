@@ -42,7 +42,7 @@ def main(api, symbol: str = 'BTCUSD', bucket_name='crypto_data_collection', symb
     gcs_storage = CloudStorageUtils()
 
     fingerprint = gcs_storage.get_fingerprint_for_user(
-        bucket_name='crypto_data_collection',
+        bucket_name=bucket_name,
         file_name=f'{symbol}/fingerprint.csv'
     )
 
