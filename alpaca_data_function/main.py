@@ -130,7 +130,6 @@ def historical_data(
     shift_dates = [[i, j] for i, j in zip(dates, dates[1:])]
 
     for start, end in shift_dates:
-        logger.warning(f'Saving historical data from : {start} to : {end} for {symbol} to cloud storage')
 
         if symbol_type == 'crypto':
             data = api.get_crypto_bars(
@@ -148,6 +147,8 @@ def historical_data(
             ).df
 
         if not data.empty:
+            logger.warning(f'Saving historical data from : {start} to : {end} for {symbol} to cloud storage')
+            logger.warning(f'The length of the data is {len(data)}')
             index_timestamp_raw = data.index.format()[-1]
             latest_bar_data = index_timestamp_raw.replace(' ', '_')
             converted_data = convert_columns_to_float64(df=data, columns=['open', 'high', 'low', 'close', 'volume'])
@@ -167,6 +168,8 @@ def historical_data(
                 file_name=f'{symbol}/fingerprint.csv',
                 fingerprint=fingerprint
             )
+        else:
+            logger.warning(f'No data for {symbol} between {start} and {end}')
 
 
 @app.route('/', methods=['POST'])
