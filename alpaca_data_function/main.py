@@ -47,6 +47,7 @@ def main(api, symbol: str = 'BTCUSD', bucket_name='crypto_data_collection', symb
     )
 
     logger.warning(f'Current fingerprint for {symbol} is {fingerprint}')
+    logger.warning(f'The symbol type is {symbol_type}')
 
     if not fingerprint_is_up_to_date(fingerprint=fingerprint, symbol_type=symbol_type):
         logger.warning(f'Fingerprint is not up to date for {symbol}')
