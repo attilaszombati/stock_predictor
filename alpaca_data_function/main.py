@@ -51,7 +51,8 @@ def main(api, symbol: str = 'BTCUSD', bucket_name='crypto_data_collection', symb
 
     if not fingerprint_is_up_to_date(fingerprint=fingerprint, symbol_type=symbol_type):
         logger.warning(f'Fingerprint is not up to date for {symbol}')
-        historical_data(api=api, symbol=symbol, start_timestamp=fingerprint, update_history=True)
+        historical_data(api=api, symbol=symbol, start_timestamp=fingerprint, update_history=True,
+                        symbol_type=symbol_type)
 
     time_frame = TimeFrame.Minute
 
