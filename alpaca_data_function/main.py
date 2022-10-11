@@ -160,17 +160,18 @@ def historical_data(
                                                    file_name=f'{symbol}/{latest_bar_data}_{symbol}.pq',
                                                    parquet_file=f'/tmp/{latest_bar_data}_{symbol}.pq')
 
-            fingerprint = index_timestamp_raw
-
-            logger.warning(f'Setting fingerprint for {symbol} to {fingerprint}')
-
-            gcs_storage.set_fingerprint_for_user(
-                bucket_name=bucket_name,
-                file_name=f'{symbol}/fingerprint.csv',
-                fingerprint=fingerprint
-            )
         else:
             logger.warning(f'No data for {symbol} between {start} and {end}')
+
+    fingerprint = index_timestamp_raw
+
+    logger.warning(f'Setting fingerprint for {symbol} to {fingerprint}')
+
+    gcs_storage.set_fingerprint_for_user(
+        bucket_name=bucket_name,
+        file_name=f'{symbol}/fingerprint.csv',
+        fingerprint=fingerprint
+    )
 
 
 @app.route('/', methods=['POST'])
