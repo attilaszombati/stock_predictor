@@ -150,6 +150,7 @@ def historical_data(
         if not data.empty:
             logger.warning(f'Saving historical data from : {start} to : {end} for {symbol} to cloud storage')
             logger.warning(f'The length of the data is {len(data)}')
+            logger.warning(f'The head of the data is {data.head()}')
             index_timestamp_raw = data.index.format()[-1]
             latest_bar_data = index_timestamp_raw.replace(' ', '_')
             converted_data = convert_columns_to_float64(df=data, columns=['open', 'high', 'low', 'close', 'volume'])
