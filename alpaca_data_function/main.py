@@ -233,9 +233,6 @@ def historical_data(
     dates = pd.date_range(**range_config).strftime(time_format).to_list()
     shift_dates = [[i, j] for i, j in zip(dates, dates[1:])]
 
-    print(bucket_name)
-    print(shift_dates)
-
     for start, end in shift_dates:
 
         if symbol_type == 'crypto':
@@ -245,8 +242,6 @@ def historical_data(
                 start=start,
                 end=end
             ).df
-            print(data)
-            print(len(data))
         else:
             data = api.get_bars(
                 symbol=symbol,
@@ -262,14 +257,6 @@ def historical_data(
             converted_data = convert_columns_to_float64(df=data, columns=['open', 'high', 'low', 'close', 'volume'])
             converted_data.to_parquet(path=f'/tmp/{latest_bar_data}_{symbol}.pq', compression='snappy')
             logger.warning(f'Saving {latest_bar_data} data for {symbol} to cloud storage')
-
-            df = pd.read_parquet(path=f'/tmp/{latest_bar_data}_{symbol}.pq')
-
-            print("X" * 50)
-            print(df)
-            print(latest_bar_data)
-            print(symbol)
-            print("X" * 50)
 
             gcs_storage.save_data_to_cloud_storage(bucket_name=bucket_name,
                                                    file_name=f'{symbol}/{latest_bar_data}_{symbol}.pq',
@@ -317,10 +304,4 @@ def handler():
 
 
 if __name__ == '__main__':
-    # app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
-
-    api = tradeapi.REST(key_id=API_KEY,
-                        secret_key=SECRET_KEY,
-                        base_url='https://paper-api.alpaca.markets')
-
-    main(api=api, symbol="DOGEUSD", bucket_name="crypto_data_collection", symbol_type="crypto")
+    app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
