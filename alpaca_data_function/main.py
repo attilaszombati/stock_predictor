@@ -38,6 +38,117 @@ def convert_columns_to_float64(df, columns):
     return df
 
 
+class AlpacaDataFunction:
+
+    def __init__(self, symbol: str = '', update_history: bool = False):
+        self.symbol = symbol
+        self.update_history = update_history
+        self.api = tradeapi.REST(
+            base_url='https://paper-api.alpaca.markets',
+            key_id=API_KEY,
+            secret_key=SECRET_KEY,
+            api_version='v2'
+        )
+
+    def get_latest_data(self, start_timestamp: str = None, end_timestamp: str = None, time_frame=TimeFrame.Minute):
+        raise NotImplementedError('This method must be implemented in a subclass')
+
+    def get_latest_data_time(self, data: pd.DataFrame):
+        raise NotImplementedError('This method must be implemented in a subclass')
+
+    def get_historical_data(self, symbol: str, bucket_name: str, symbol_type: str, start_timestamp: str = None,
+                            end_timestamp: str = None):
+        raise NotImplementedError('This method must be implemented in a subclass')
+
+    def create_historical_data_range(self, start_timestamp: str, end_timestamp: str):
+        raise NotImplementedError('This method must be implemented in a subclass')
+
+    def create_latest_data_range(self, start_timestamp: str, end_timestamp: str):
+        raise NotImplementedError('This method must be implemented in a subclass')
+
+    def check_data_empty(self, data: pd.DataFrame):
+        raise NotImplementedError('This method must be implemented in a subclass')
+
+    @staticmethod
+    def convert_columns_to_float64(data: pd.DataFrame, columns):
+        for column in columns:
+            data[column] = data[column].astype('float64')
+        data.reset_index(inplace=True)
+        data["timestamp"] = data["timestamp"].astype(int) // 10 ** 9
+
+        return data
+
+    def convert_data_to_parquet(self, data: pd.DataFrame, latest_bar_data: str):
+        data.to_parquet(path=f'/tmp/{latest_bar_data}_{self.symbol}.pq', compression='snappy')
+        logger.warning(f'Saving {latest_bar_data} data for {self.symbol} to cloud storage')
+
+
+class AlpacaCryptoDataFunction(AlpacaDataFunction):
+
+    def __int__(self, symbol: str):
+        super().__init__(symbol=symbol)
+        self.symbol = symbol
+
+    def get_latest_data(self, start_timestamp: str = None, end_timestamp: str = None, time_frame=TimeFrame.Minute):
+        data = api.get_crypto_bars(
+            symbol=self.symbol,
+            timeframe=time_frame.value
+        ).df.iloc[[0]]
+
+        return data
+
+    def get_latest_data_time(self, data: pd.DataFrame):
+        fingerprint = data.index.format()[-1]
+        latest_bar_data = fingerprint.replace(' ', '_')
+        return fingerprint, latest_bar_data
+
+    def get_historical_data(self, symbol: str, bucket_name: str, symbol_type: str, start_timestamp: str = None,
+                            end_timestamp: str = None):
+        pass
+
+    def create_historical_data_range(self, start_timestamp: str, end_timestamp: str):
+        pass
+
+    def create_latest_data_range(self, start_timestamp: str, end_timestamp: str, time_frame=TimeFrame.Minute):
+        pass
+
+    def check_data_empty(self, data: pd.DataFrame):
+        pass
+
+
+class AlpacaStockDataFunction(AlpacaDataFunction):
+
+    def __int__(self, symbol: str):
+        super().__init__(symbol=symbol)
+        self.symbol = symbol
+
+    def get_latest_data(self, start_timestamp: str = None, end_timestamp: str = None, time_frame=TimeFrame.Minute):
+        data = api.get_bars(
+            symbol=self.symbol,
+            timeframe=time_frame.value
+        ).df.iloc[[0]]
+
+        return data
+
+    def get_latest_data_time(self, data: pd.DataFrame):
+        fingerprint = data.index.format()[0]
+        latest_bar_data = fingerprint.replace(' ', '_')
+        return fingerprint, latest_bar_data
+
+    def get_historical_data(self, symbol: str, bucket_name: str, symbol_type: str, start_timestamp: str = None,
+                            end_timestamp: str = None):
+        raise NotImplementedError('This method must be implemented in a subclass')
+
+    def create_historical_data_range(self, start_timestamp: str, end_timestamp: str):
+        raise NotImplementedError('This method must be implemented in a subclass')
+
+    def create_latest_data_range(self, start_timestamp: str, end_timestamp: str, time_frame=TimeFrame.Minute):
+        pass
+
+    def check_data_empty(self, data: pd.DataFrame):
+        raise NotImplementedError('This method must be implemented in a subclass')
+
+
 def main(api, symbol: str = 'BTCUSD', bucket_name='crypto_data_collection', symbol_type='crypto'):
     gcs_storage = CloudStorageUtils()
 
@@ -50,45 +161,37 @@ def main(api, symbol: str = 'BTCUSD', bucket_name='crypto_data_collection', symb
     logger.warning(f'The symbol type is {symbol_type}')
 
     if not fingerprint_is_up_to_date(fingerprint=fingerprint, symbol_type=symbol_type):
-        logger.warning(f'Fingerprint is not up to date for {symbol}')
+        logger.warning(f'Fingerprint is not up to date for {symbol}, historical data will be updated')
         historical_data(api=api, symbol=symbol, start_timestamp=fingerprint, update_history=True,
                         symbol_type=symbol_type, bucket_name=bucket_name)
 
-    time_frame = TimeFrame.Minute
-
     if symbol_type == 'crypto':
-        data = api.get_crypto_bars(
-            symbol=symbol,
-            timeframe=time_frame.value
-        ).df.iloc[[-1]]
+        alpaca = AlpacaCryptoDataFunction(symbol=symbol)
     else:
-        data = api.get_bars(
-            symbol=symbol,
-            timeframe=time_frame.value
-        ).df.iloc[[-1]]
+        alpaca = AlpacaStockDataFunction(symbol=symbol)
 
-    index_timestamp_raw = data.index.format()[-1]
-    latest_bar_data = index_timestamp_raw.replace(' ', '_')
-    converted_data = convert_columns_to_float64(df=data, columns=['open', 'high', 'low', 'close', 'volume'])
+    data = AlpacaCryptoDataFunction(symbol=symbol).get_latest_data()
 
-    converted_data.to_parquet(path=f'/tmp/{latest_bar_data}_{symbol}.pq', compression='snappy')
+    fingerprint, latest_bar_data = alpaca.get_latest_data_time(data=data)
+    converted_data = alpaca.convert_columns_to_float64(data=data, columns=['open', 'high', 'low', 'close', 'volume'])
+
+    alpaca.convert_data_to_parquet(data=converted_data, latest_bar_data=latest_bar_data)
+
     logger.warning(f'Saving {latest_bar_data} data for {symbol} to cloud storage')
 
     gcs_storage.save_data_to_cloud_storage(bucket_name=bucket_name,
                                            file_name=f'{symbol}/{latest_bar_data}_{symbol}.pq',
                                            parquet_file=f'/tmp/{latest_bar_data}_{symbol}.pq')
 
-    updated_fingerprint = index_timestamp_raw
-
-    logger.warning(f'Setting fingerprint for {symbol} to {updated_fingerprint}')
+    logger.warning(f'Setting fingerprint for {symbol} to {latest_bar_data}')
 
     gcs_storage.set_fingerprint_for_user(
         bucket_name=bucket_name,
         file_name=f'{symbol}/fingerprint.csv',
-        fingerprint=updated_fingerprint
+        fingerprint=fingerprint
     )
 
-    return updated_fingerprint
+    return fingerprint
 
 
 def historical_data(
@@ -130,6 +233,9 @@ def historical_data(
     dates = pd.date_range(**range_config).strftime(time_format).to_list()
     shift_dates = [[i, j] for i, j in zip(dates, dates[1:])]
 
+    print(bucket_name)
+    print(shift_dates)
+
     for start, end in shift_dates:
 
         if symbol_type == 'crypto':
@@ -139,6 +245,8 @@ def historical_data(
                 start=start,
                 end=end
             ).df
+            print(data)
+            print(len(data))
         else:
             data = api.get_bars(
                 symbol=symbol,
@@ -154,6 +262,14 @@ def historical_data(
             converted_data = convert_columns_to_float64(df=data, columns=['open', 'high', 'low', 'close', 'volume'])
             converted_data.to_parquet(path=f'/tmp/{latest_bar_data}_{symbol}.pq', compression='snappy')
             logger.warning(f'Saving {latest_bar_data} data for {symbol} to cloud storage')
+
+            df = pd.read_parquet(path=f'/tmp/{latest_bar_data}_{symbol}.pq')
+
+            print("X" * 50)
+            print(df)
+            print(latest_bar_data)
+            print(symbol)
+            print("X" * 50)
 
             gcs_storage.save_data_to_cloud_storage(bucket_name=bucket_name,
                                                    file_name=f'{symbol}/{latest_bar_data}_{symbol}.pq',
@@ -201,4 +317,10 @@ def handler():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
+    # app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
+
+    api = tradeapi.REST(key_id=API_KEY,
+                        secret_key=SECRET_KEY,
+                        base_url='https://paper-api.alpaca.markets')
+
+    main(api=api, symbol="DOGEUSD", bucket_name="crypto_data_collection", symbol_type="crypto")
