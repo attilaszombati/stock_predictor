@@ -53,8 +53,11 @@ class AlpacaDataFunction:
     def get_latest_data(self, start_timestamp: str = None, end_timestamp: str = None, time_frame=TimeFrame.Minute):
         raise NotImplementedError('This method must be implemented in a subclass')
 
-    def get_latest_data_time(self, data: pd.DataFrame):
-        raise NotImplementedError('This method must be implemented in a subclass')
+    def get_first_data_time(self, data: pd.DataFrame):
+        fingerprint = data.index.format()[-1]
+        earliest_bar_data = data.index.format()[0]
+        first_bar_data = earliest_bar_data.replace(' ', '_')
+        return fingerprint, first_bar_data
 
     def get_historical_data(self, symbol: str, bucket_name: str, symbol_type: str, start_timestamp: str = None,
                             end_timestamp: str = None):
@@ -90,17 +93,12 @@ class AlpacaCryptoDataFunction(AlpacaDataFunction):
         self.symbol = symbol
 
     def get_latest_data(self, start_timestamp: str = None, end_timestamp: str = None, time_frame=TimeFrame.Minute):
-        data = api.get_crypto_bars(
+        data = self.api.get_crypto_bars(
             symbol=self.symbol,
             timeframe=time_frame.value
-        ).df.iloc[[0]]
+        ).df.iloc[[-1]]
 
         return data
-
-    def get_latest_data_time(self, data: pd.DataFrame):
-        fingerprint = data.index.format()[-1]
-        latest_bar_data = fingerprint.replace(' ', '_')
-        return fingerprint, latest_bar_data
 
     def get_historical_data(self, symbol: str, bucket_name: str, symbol_type: str, start_timestamp: str = None,
                             end_timestamp: str = None):
@@ -123,17 +121,12 @@ class AlpacaStockDataFunction(AlpacaDataFunction):
         self.symbol = symbol
 
     def get_latest_data(self, start_timestamp: str = None, end_timestamp: str = None, time_frame=TimeFrame.Minute):
-        data = api.get_bars(
+        data = self.api.get_bars(
             symbol=self.symbol,
             timeframe=time_frame.value
-        ).df.iloc[[0]]
+        ).df.iloc[[-1]]
 
         return data
-
-    def get_latest_data_time(self, data: pd.DataFrame):
-        fingerprint = data.index.format()[0]
-        latest_bar_data = fingerprint.replace(' ', '_')
-        return fingerprint, latest_bar_data
 
     def get_historical_data(self, symbol: str, bucket_name: str, symbol_type: str, start_timestamp: str = None,
                             end_timestamp: str = None):
