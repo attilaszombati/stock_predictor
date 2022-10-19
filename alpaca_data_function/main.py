@@ -165,7 +165,7 @@ def main(api, symbol: str = 'BTCUSD', bucket_name='crypto_data_collection', symb
 
     data = AlpacaCryptoDataFunction(symbol=symbol).get_latest_data()
 
-    fingerprint, latest_bar_data = alpaca.get_latest_data_time(data=data)
+    fingerprint, latest_bar_data = alpaca.get_first_data_time(data=data)
     converted_data = alpaca.convert_columns_to_float64(data=data, columns=['open', 'high', 'low', 'close', 'volume'])
 
     alpaca.convert_data_to_parquet(data=converted_data, latest_bar_data=latest_bar_data)
