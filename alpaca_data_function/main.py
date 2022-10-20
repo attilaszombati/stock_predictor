@@ -296,12 +296,18 @@ def handler():
                 symbol_type=symbol_type
             )
         else:
-            if api.get_clock().clock.is_open:
-                main(symbol=symbol, bucket_name=bucket_name, symbol_type=symbol_type)
-            else:
-                return 'Market is closed'
+            main(symbol=symbol, bucket_name=bucket_name, symbol_type=symbol_type)
     return 'OK'
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
+    # app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
+
+    # historical_data(
+    #     symbol='TSLA',
+    #     start_timestamp='2009-01-01T00:00:00-00:00',
+    #     bucket_name='stock_data_collection',
+    #     symbol_type='stock'
+    # )
+
+    main(symbol='TSLA', bucket_name='stock_data_collection', symbol_type='stock')
