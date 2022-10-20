@@ -43,6 +43,7 @@ class AlpacaDataFunction:
     def __init__(self, symbol: str = '', update_history: bool = False):
         self.symbol = symbol
         self.update_history = update_history
+        self.time_format = '%Y-%m-%dT%H:%M:%S-00:00'
         self.api = tradeapi.REST(
             base_url='https://paper-api.alpaca.markets',
             key_id=API_KEY,
@@ -53,24 +54,29 @@ class AlpacaDataFunction:
     def get_latest_data(self, start_timestamp: str = None, end_timestamp: str = None, time_frame=TimeFrame.Minute):
         raise NotImplementedError('This method must be implemented in a subclass')
 
-    def get_first_data_time(self, data: pd.DataFrame):
+    def get_history_batch(self, start_timestamp: str, end_timestamp: str, time_frame=TimeFrame.Minute):
+        raise NotImplementedError('This method must be implemented in a subclass')
+
+    @staticmethod
+    def get_first_data_time(data: pd.DataFrame):
         fingerprint = data.index.format()[-1]
         earliest_bar_data = data.index.format()[0]
         first_bar_data = earliest_bar_data.replace(' ', '_')
         return fingerprint, first_bar_data
 
-    def get_historical_data(self, symbol: str, bucket_name: str, symbol_type: str, start_timestamp: str = None,
-                            end_timestamp: str = None):
+    def set_date_range(self, start_timestamp: str):
         raise NotImplementedError('This method must be implemented in a subclass')
 
-    def create_historical_data_range(self, start_timestamp: str, end_timestamp: str):
-        raise NotImplementedError('This method must be implemented in a subclass')
-
-    def create_latest_data_range(self, start_timestamp: str, end_timestamp: str):
-        raise NotImplementedError('This method must be implemented in a subclass')
+    def create_date_range(self, range_config: dict):
+        dates = pd.date_range(**range_config).strftime(self.time_format).to_list()
+        shift_dates = [[i, j] for i, j in zip(dates, dates[1:])]
+        return shift_dates
 
     def check_data_empty(self, data: pd.DataFrame):
-        raise NotImplementedError('This method must be implemented in a subclass')
+        if data.empty:
+            logger.warning(f'No data for {self.symbol}')
+            return True
+        return False
 
     @staticmethod
     def convert_columns_to_float64(data: pd.DataFrame, columns):
@@ -91,6 +97,8 @@ class AlpacaCryptoDataFunction(AlpacaDataFunction):
     def __int__(self, symbol: str):
         super().__init__(symbol=symbol)
         self.symbol = symbol
+        self.update_history_delta = timedelta(days=1)
+        self.normal_history_delta = timedelta(weeks=15)
 
     def get_latest_data(self, start_timestamp: str = None, end_timestamp: str = None, time_frame=TimeFrame.Minute):
         data = self.api.get_crypto_bars(
@@ -100,18 +108,29 @@ class AlpacaCryptoDataFunction(AlpacaDataFunction):
 
         return data
 
-    def get_historical_data(self, symbol: str, bucket_name: str, symbol_type: str, start_timestamp: str = None,
-                            end_timestamp: str = None):
-        pass
+    def get_history_batch(self, start_timestamp: str, end_timestamp: str, time_frame=TimeFrame.Minute):
+        data = self.api.get_crypto_bars(
+            symbol=self.symbol,
+            timeframe=time_frame.value,
+            start=start_timestamp,
+            end=end_timestamp
+        ).df
 
-    def create_historical_data_range(self, start_timestamp: str, end_timestamp: str):
-        pass
+        return data
 
-    def create_latest_data_range(self, start_timestamp: str, end_timestamp: str, time_frame=TimeFrame.Minute):
-        pass
-
-    def check_data_empty(self, data: pd.DataFrame):
-        pass
+    def set_date_range(self, start_timestamp: str):
+        if self.update_history:
+            offset_time = datetime.now() + timedelta(hours=3)
+            freq = '1h'
+        else:
+            offset_time = datetime.now() + timedelta(weeks=15)
+            freq = '3m'
+        end_timestamp = offset_time.strftime(self.time_format)
+        return {
+            'start': start_timestamp,
+            'end': end_timestamp,
+            'freq': freq
+        }
 
 
 class AlpacaStockDataFunction(AlpacaDataFunction):
@@ -128,18 +147,28 @@ class AlpacaStockDataFunction(AlpacaDataFunction):
 
         return data
 
-    def get_historical_data(self, symbol: str, bucket_name: str, symbol_type: str, start_timestamp: str = None,
-                            end_timestamp: str = None):
-        raise NotImplementedError('This method must be implemented in a subclass')
+    def get_history_batch(self, start_timestamp: str, end_timestamp: str, time_frame=TimeFrame.Minute):
+        data = self.api.get_bars(
+            symbol=self.symbol,
+            timeframe=time_frame.value,
+            start=start_timestamp,
+            end=end_timestamp
+        ).df
 
-    def create_historical_data_range(self, start_timestamp: str, end_timestamp: str):
-        raise NotImplementedError('This method must be implemented in a subclass')
+        return data
 
-    def create_latest_data_range(self, start_timestamp: str, end_timestamp: str, time_frame=TimeFrame.Minute):
-        pass
-
-    def check_data_empty(self, data: pd.DataFrame):
-        raise NotImplementedError('This method must be implemented in a subclass')
+    def set_date_range(self, start_timestamp: str):
+        offset_time = datetime.now() - timedelta(hours=2, minutes=15)
+        if self.update_history:
+            freq = '5h'
+        else:
+            freq = '3m'
+        end_timestamp = offset_time.strftime(self.time_format)
+        return {
+            'start': start_timestamp,
+            'end': end_timestamp,
+            'freq': freq
+        }
 
 
 def main(api, symbol: str = 'BTCUSD', bucket_name='crypto_data_collection', symbol_type='crypto'):
@@ -196,77 +225,43 @@ def historical_data(
         symbol_type='crypto'
 ):
     gcs_storage = CloudStorageUtils()
-    time_format = '%Y-%m-%dT%H:%M:%S-00:00'
-    freq = '3m'
 
-    if update_history:
-        if symbol_type == 'crypto':
-            offset_time = datetime.now() + timedelta(days=1)
-        else:
-            offset_time = datetime.now() - timedelta(hours=2, minutes=15)
-        end_timestamp = offset_time.strftime(time_format)
-        range_config = {
-            'start': start_timestamp,
-            'end': end_timestamp,
-            'inclusive': 'both'
-        }
+    if symbol_type == 'crypto':
+        alpaca = AlpacaCryptoDataFunction(symbol=symbol, update_history=update_history)
     else:
-        if symbol_type == 'crypto':
-            offset_time = datetime.now() + timedelta(weeks=15)
-        else:
-            offset_time = datetime.now() - timedelta(hours=2, minutes=15)
-        end_timestamp = offset_time.strftime(time_format)
-        range_config = {
-            'start': start_timestamp,
-            'end': end_timestamp,
-            'freq': freq,
-            'inclusive': 'both'
-        }
+        alpaca = AlpacaStockDataFunction(symbol=symbol, update_history=update_history)
 
-    dates = pd.date_range(**range_config).strftime(time_format).to_list()
-    shift_dates = [[i, j] for i, j in zip(dates, dates[1:])]
+    range_config = alpaca.set_date_range(start_timestamp=start_timestamp)
+    date_range = alpaca.create_date_range(range_config=range_config)
 
-    for start, end in shift_dates:
+    for start, end in date_range:
 
-        if symbol_type == 'crypto':
-            data = api.get_crypto_bars(
-                symbol=symbol,
-                timeframe=TimeFrame.Minute,
-                start=start,
-                end=end
-            ).df
-        else:
-            data = api.get_bars(
-                symbol=symbol,
-                timeframe=TimeFrame.Minute,
-                start=start,
-                end=end
-            ).df
+        data = alpaca.get_history_batch(start_timestamp=start, end_timestamp=end)
 
-        if not data.empty:
+        if not alpaca.check_data_empty(data=data):
             logger.warning(f'Saving historical data from : {start} to : {end} for {symbol} to cloud storage')
-            index_timestamp_raw = data.index.format()[0]
-            latest_bar_data = index_timestamp_raw.replace(' ', '_')
-            converted_data = convert_columns_to_float64(df=data, columns=['open', 'high', 'low', 'close', 'volume'])
-            converted_data.to_parquet(path=f'/tmp/{latest_bar_data}_{symbol}.pq', compression='snappy')
-            logger.warning(f'Saving {latest_bar_data} data for {symbol} to cloud storage')
+            fingerprint, first_bar_data = alpaca.get_first_data_time(data=data)
+            converted_data = alpaca.convert_columns_to_float64(data=data,
+                                                               columns=['open', 'high', 'low', 'close', 'volume'])
+            alpaca.convert_data_to_parquet(data=converted_data, latest_bar_data=first_bar_data)
+            logger.warning(f'Saving {first_bar_data} data for {symbol} to cloud storage')
 
             gcs_storage.save_data_to_cloud_storage(bucket_name=bucket_name,
-                                                   file_name=f'{symbol}/{latest_bar_data}_{symbol}.pq',
-                                                   parquet_file=f'/tmp/{latest_bar_data}_{symbol}.pq')
+                                                   file_name=f'{symbol}/{first_bar_data}_{symbol}.pq',
+                                                   parquet_file=f'/tmp/{first_bar_data}_{symbol}.pq')
 
         else:
             logger.warning(f'No data for {symbol} between {start} and {end}')
 
-    fingerprint = index_timestamp_raw
+    if not alpaca.check_data_empty(data=data):
 
-    logger.warning(f'Setting fingerprint for {symbol} to {fingerprint}')
+        logger.warning(f'Setting fingerprint for {symbol} to {fingerprint}')
 
-    gcs_storage.set_fingerprint_for_user(
-        bucket_name=bucket_name,
-        file_name=f'{symbol}/fingerprint.csv',
-        fingerprint=fingerprint
-    )
+        gcs_storage.set_fingerprint_for_user(
+            bucket_name=bucket_name,
+            file_name=f'{symbol}/fingerprint.csv',
+            fingerprint=fingerprint
+        )
 
 
 @app.route('/', methods=['POST'])
@@ -292,7 +287,10 @@ def handler():
                 symbol_type=symbol_type
             )
         else:
-            main(api=api, symbol=symbol, bucket_name=bucket_name, symbol_type=symbol_type)
+            if api.get_clock().clock.is_open:
+                main(api=api, symbol=symbol, bucket_name=bucket_name, symbol_type=symbol_type)
+            else:
+                return 'Market is closed'
     return 'OK'
 
 
