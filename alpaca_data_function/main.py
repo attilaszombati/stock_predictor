@@ -245,7 +245,7 @@ def historical_data(
 
         if not data.empty:
             logger.warning(f'Saving historical data from : {start} to : {end} for {symbol} to cloud storage')
-            index_timestamp_raw = data.index.format()[-1]
+            index_timestamp_raw = data.index.format()[0]
             latest_bar_data = index_timestamp_raw.replace(' ', '_')
             converted_data = convert_columns_to_float64(df=data, columns=['open', 'high', 'low', 'close', 'volume'])
             converted_data.to_parquet(path=f'/tmp/{latest_bar_data}_{symbol}.pq', compression='snappy')
