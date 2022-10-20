@@ -91,6 +91,10 @@ class AlpacaDataFunction:
         data.to_parquet(path=f'/tmp/{latest_bar_data}_{self.symbol}.pq', compression='snappy')
         logger.warning(f'Saving {latest_bar_data} data for {self.symbol} to cloud storage')
 
+    @staticmethod
+    def convert_fingerprint(fingerprint: str):
+        return fingerprint.replace(' ', 'T')
+
 
 class AlpacaCryptoDataFunction(AlpacaDataFunction):
 
@@ -158,20 +162,17 @@ class AlpacaStockDataFunction(AlpacaDataFunction):
         return data
 
     def set_date_range(self, start_timestamp: str):
-        offset_time = datetime.now() - timedelta(hours=2, minutes=15)
-        if self.update_history:
-            freq = '5h'
-        else:
-            freq = '3m'
-        end_timestamp = offset_time.strftime(self.time_format)
-        return {
-            'start': start_timestamp,
-            'end': end_timestamp,
-            'freq': freq
-        }
+        if not self.update_history:
+            offset_time = datetime.now() - timedelta(hours=2, minutes=15)
+            end_timestamp = offset_time.strftime(self.time_format)
+            return {
+                'start': start_timestamp,
+                'end': end_timestamp,
+                'freq': '2m'
+            }
 
 
-def main(api, symbol: str = 'BTCUSD', bucket_name='crypto_data_collection', symbol_type='crypto'):
+def main(symbol: str = 'BTCUSD', bucket_name='crypto_data_collection', symbol_type='crypto'):
     gcs_storage = CloudStorageUtils()
 
     fingerprint = gcs_storage.get_fingerprint_for_user(
@@ -184,7 +185,7 @@ def main(api, symbol: str = 'BTCUSD', bucket_name='crypto_data_collection', symb
 
     if not fingerprint_is_up_to_date(fingerprint=fingerprint, symbol_type=symbol_type):
         logger.warning(f'Fingerprint is not up to date for {symbol}, historical data will be updated')
-        historical_data(api=api, symbol=symbol, start_timestamp=fingerprint, update_history=True,
+        historical_data(symbol=symbol, start_timestamp=fingerprint, update_history=True,
                         symbol_type=symbol_type, bucket_name=bucket_name)
 
     if symbol_type == 'crypto':
@@ -217,7 +218,6 @@ def main(api, symbol: str = 'BTCUSD', bucket_name='crypto_data_collection', symb
 
 
 def historical_data(
-        api,
         symbol: str = 'BTCUSD',
         start_timestamp: str = '2009-01-01T00:00:00-00:00',
         update_history=False,
@@ -231,8 +231,19 @@ def historical_data(
     else:
         alpaca = AlpacaStockDataFunction(symbol=symbol, update_history=update_history)
 
-    range_config = alpaca.set_date_range(start_timestamp=start_timestamp)
-    date_range = alpaca.create_date_range(range_config=range_config)
+    if symbol_type == 'stock':
+        if update_history:
+            start = start_timestamp
+            end = datetime.now() - timedelta(hours=2, minutes=15)
+            date_range = [[alpaca.convert_fingerprint(start), end.strftime(alpaca.time_format)]]
+        else:
+            range_config = alpaca.set_date_range(start_timestamp=start_timestamp)
+            date_range = alpaca.create_date_range(range_config=range_config)
+    else:
+        range_config = alpaca.set_date_range(start_timestamp=start_timestamp)
+        date_range = alpaca.create_date_range(range_config=range_config)
+
+    fingerprint = None
 
     for start, end in date_range:
 
@@ -253,8 +264,7 @@ def historical_data(
         else:
             logger.warning(f'No data for {symbol} between {start} and {end}')
 
-    if not alpaca.check_data_empty(data=data):
-
+    if fingerprint:
         logger.warning(f'Setting fingerprint for {symbol} to {fingerprint}')
 
         gcs_storage.set_fingerprint_for_user(
@@ -280,7 +290,6 @@ def handler():
     for symbol in symbols:
         if data.get('SCRAPING_TYPE') == 'history':
             historical_data(
-                api=api,
                 symbol=symbol,
                 start_timestamp=start_timestamp,
                 bucket_name=bucket_name,
@@ -288,7 +297,7 @@ def handler():
             )
         else:
             if api.get_clock().clock.is_open:
-                main(api=api, symbol=symbol, bucket_name=bucket_name, symbol_type=symbol_type)
+                main(symbol=symbol, bucket_name=bucket_name, symbol_type=symbol_type)
             else:
                 return 'Market is closed'
     return 'OK'
