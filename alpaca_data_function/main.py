@@ -163,20 +163,20 @@ def main(api, symbol: str = 'BTCUSD', bucket_name='crypto_data_collection', symb
     else:
         alpaca = AlpacaStockDataFunction(symbol=symbol)
 
-    data = AlpacaCryptoDataFunction(symbol=symbol).get_latest_data()
+    data = alpaca.get_latest_data()
 
-    fingerprint, latest_bar_data = alpaca.get_first_data_time(data=data)
+    fingerprint, first_bar_data = alpaca.get_first_data_time(data=data)
     converted_data = alpaca.convert_columns_to_float64(data=data, columns=['open', 'high', 'low', 'close', 'volume'])
 
-    alpaca.convert_data_to_parquet(data=converted_data, latest_bar_data=latest_bar_data)
+    alpaca.convert_data_to_parquet(data=converted_data, latest_bar_data=first_bar_data)
 
-    logger.warning(f'Saving {latest_bar_data} data for {symbol} to cloud storage')
+    logger.warning(f'Saving {first_bar_data} data for {symbol} to cloud storage')
 
     gcs_storage.save_data_to_cloud_storage(bucket_name=bucket_name,
-                                           file_name=f'{symbol}/{latest_bar_data}_{symbol}.pq',
-                                           parquet_file=f'/tmp/{latest_bar_data}_{symbol}.pq')
+                                           file_name=f'{symbol}/{first_bar_data}_{symbol}.pq',
+                                           parquet_file=f'/tmp/{first_bar_data}_{symbol}.pq')
 
-    logger.warning(f'Setting fingerprint for {symbol} to {latest_bar_data}')
+    logger.warning(f'Setting fingerprint for {symbol} to {first_bar_data}')
 
     gcs_storage.set_fingerprint_for_user(
         bucket_name=bucket_name,
