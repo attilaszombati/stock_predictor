@@ -24,7 +24,7 @@ def fingerprint_is_up_to_date(fingerprint: str = None, symbol_type: str = 'crypt
     if symbol_type == 'crypto':
         now_timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S-00:00')
     else:
-        now_timestamp = (datetime.now() - timedelta(hours=2, minutes=15)).strftime('%Y-%m-%d %H:%M:%S-00:00')
+        now_timestamp = (datetime.now() - timedelta(minutes=15)).strftime('%Y-%m-%d %H:%M:%S-00:00')
 
     logger.warning(f'Current timestamp is {now_timestamp}')
     logger.warning(f'Fingerprint is {fingerprint}')
@@ -208,7 +208,7 @@ def historical_data(
     if symbol_type == 'stock':
         if update_history:
             start = start_timestamp
-            end = datetime.now() - timedelta(hours=2, minutes=15)
+            end = datetime.now() - timedelta(minutes=15)
             date_range = [[alpaca.convert_fingerprint(start), end.strftime(alpaca.time_format)]]
         else:
             range_config = alpaca.set_date_range(start_timestamp=start_timestamp)
