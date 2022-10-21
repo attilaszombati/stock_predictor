@@ -26,7 +26,7 @@ def fingerprint_is_up_to_date(fingerprint: str = None, symbol_type: str = 'crypt
     else:
         now_timestamp = (datetime.now() - timedelta(hours=2, minutes=15)).strftime('%Y-%m-%d %H:%M:%S-00:00')
 
-    return now_timestamp < fingerprint
+    return now_timestamp >= fingerprint
 
 
 def convert_columns_to_float64(df, columns):
@@ -183,36 +183,11 @@ def main(symbol: str = 'BTCUSD', bucket_name='crypto_data_collection', symbol_ty
     logger.warning(f'Current fingerprint for {symbol} is {fingerprint}')
     logger.warning(f'The symbol type is {symbol_type}')
 
-    if not fingerprint_is_up_to_date(fingerprint=fingerprint, symbol_type=symbol_type):
+    if fingerprint_is_up_to_date(fingerprint=fingerprint, symbol_type=symbol_type):
+
         logger.warning(f'Fingerprint is not up to date for {symbol}, historical data will be updated')
         historical_data(symbol=symbol, start_timestamp=fingerprint, update_history=True,
                         symbol_type=symbol_type, bucket_name=bucket_name)
-
-    if symbol_type == 'crypto':
-        alpaca = AlpacaCryptoDataFunction(symbol=symbol)
-    else:
-        alpaca = AlpacaStockDataFunction(symbol=symbol)
-
-    data = alpaca.get_latest_data()
-
-    fingerprint, first_bar_data = alpaca.get_first_data_time(data=data)
-    converted_data = alpaca.convert_columns_to_float64(data=data, columns=['open', 'high', 'low', 'close', 'volume'])
-
-    alpaca.convert_data_to_parquet(data=converted_data, latest_bar_data=first_bar_data)
-
-    logger.warning(f'Saving {first_bar_data} data for {symbol} to cloud storage')
-
-    gcs_storage.save_data_to_cloud_storage(bucket_name=bucket_name,
-                                           file_name=f'{symbol}/{first_bar_data}_{symbol}.pq',
-                                           parquet_file=f'/tmp/{first_bar_data}_{symbol}.pq')
-
-    logger.warning(f'Setting fingerprint for {symbol} to {first_bar_data}')
-
-    gcs_storage.set_fingerprint_for_user(
-        bucket_name=bucket_name,
-        file_name=f'{symbol}/fingerprint.csv',
-        fingerprint=fingerprint
-    )
 
     return fingerprint
 
