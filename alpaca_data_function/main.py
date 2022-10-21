@@ -280,4 +280,4 @@ if __name__ == '__main__':
     #     symbol_type='stock'
     # )
 
-    main(symbol='TSLA', bucket_name='stock_data_collection', symbol_type='stock')
+    # main(symbol='TSLA', bucket_name='stock_data_collection', symbol_type='stock')
