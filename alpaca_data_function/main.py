@@ -26,6 +26,9 @@ def fingerprint_is_up_to_date(fingerprint: str = None, symbol_type: str = 'crypt
     else:
         now_timestamp = (datetime.now() - timedelta(hours=2, minutes=15)).strftime('%Y-%m-%d %H:%M:%S-00:00')
 
+    logger.warning(f'Current timestamp is {now_timestamp}')
+    logger.warning(f'Fingerprint is {fingerprint}')
+
     return now_timestamp >= fingerprint
 
 
@@ -89,7 +92,6 @@ class AlpacaDataFunction:
 
     def convert_data_to_parquet(self, data: pd.DataFrame, latest_bar_data: str):
         data.to_parquet(path=f'/tmp/{latest_bar_data}_{self.symbol}.pq', compression='snappy')
-        logger.warning(f'Saving {latest_bar_data} data for {self.symbol} to cloud storage')
 
     @staticmethod
     def convert_fingerprint(fingerprint: str):
@@ -180,9 +182,6 @@ def main(symbol: str = 'BTCUSD', bucket_name='crypto_data_collection', symbol_ty
         file_name=f'{symbol}/fingerprint.csv'
     )
 
-    logger.warning(f'Current fingerprint for {symbol} is {fingerprint}')
-    logger.warning(f'The symbol type is {symbol_type}')
-
     if fingerprint_is_up_to_date(fingerprint=fingerprint, symbol_type=symbol_type):
 
         logger.warning(f'Fingerprint is not up to date for {symbol}, historical data will be updated')
@@ -258,10 +257,6 @@ def handler():
     bucket_name = data.get('BUCKET_NAME', 'crypto_data_collection')
     symbol_type = data.get('SYMBOL_TYPE', 'crypto')
 
-    api = tradeapi.REST(key_id=API_KEY,
-                        secret_key=SECRET_KEY,
-                        base_url='https://paper-api.alpaca.markets')
-
     for symbol in symbols:
         if data.get('SCRAPING_TYPE') == 'history':
             historical_data(
@@ -285,4 +280,4 @@ if __name__ == '__main__':
     #     symbol_type='stock'
     # )
 
-    # main(symbol='TSLA', bucket_name='stock_data_collection', symbol_type='stock')
+    main(symbol='TSLA', bucket_name='stock_data_collection', symbol_type='stock')
