@@ -23,7 +23,7 @@ resource "google_cloud_run_service" "twitter-scraper" {
           container_port = 8080
         }
       }
-      timeout_seconds      = 540
+      timeout_seconds      = 3600
       service_account_name = google_service_account.cloud-run-service-account.email
     }
   }
