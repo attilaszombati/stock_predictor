@@ -74,7 +74,7 @@ resource "google_cloud_scheduler_job" "cloudrun-scheduler" {
     http_method = "POST"
     uri         = google_cloud_run_service.twitter-scraper.status.0.url
     headers     = { "Content-Type" : "application/json", "User-Agent" : "Google-Cloud-Scheduler" }
-    body        = base64encode("{\"TWITTER_USERS\": [\"elonmusk\", \"JeffBezos\", \"BarackObama\", \"JoeBiden\", \"KamalaHarris\"], \"SCRAPING_TYPE\": \"news\"}")
+    body        = base64encode("{\"TWITTER_USERS\": [\"elonmusk\", \"JeffBezos\", \"BarackObama\", \"JoeBiden\", \"KamalaHarris\"], \"SCRAPING_TYPE\": \"history\"}")
     oidc_token {
       service_account_email = google_service_account.cloudrun-invoker.email
     }
