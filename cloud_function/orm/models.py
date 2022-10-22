@@ -2,7 +2,7 @@ import logging
 
 from sqlalchemy import Column, Integer, func
 from sqlalchemy import select
-from sqlalchemy.dialects.sqlite import INTEGER, VARCHAR, DATETIME
+from sqlalchemy.dialects.sqlite import INTEGER, VARCHAR, DATETIME, FLOAT
 from sqlalchemy.orm import declarative_base, Session
 
 logger = logging.getLogger(__name__)
@@ -16,6 +16,7 @@ class TwitterBaseModel(Base):
     id = Column(INTEGER(), primary_key=True, index=True, autoincrement=True)
     cashtags = Column(VARCHAR(1000), index=True, nullable=True)
     content = Column(VARCHAR(1000))
+    sentiment = Column(FLOAT())
     conversation_id = Column(INTEGER())
     coordinates = Column(VARCHAR(1000), nullable=True)
     tweeted_at = Column(DATETIME(truncate_microseconds=True))
