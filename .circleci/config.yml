@@ -73,6 +73,7 @@ jobs:
           google-project-id: GOOGLE_PROJECT_ID
           registry-url: "gcr.io"
           image: $IMAGE_NAME
+          tag: latest,$CIRCLE_SHA1
 
   build_push_image_crypto_data_scraper:
     docker:
