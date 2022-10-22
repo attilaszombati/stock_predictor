@@ -18,7 +18,7 @@ resource "google_cloud_run_service" "twitter-scraper" {
   template {
     spec {
       containers {
-        image = "gcr.io/attila-szombati-sandbox/twitter-scraper:latest"
+        image = "gcr.io/attila-szombati-sandbox/twitter-scraper:${data.external.env.result["docker_image_tag"]}"
         ports {
           container_port = 8080
         }
