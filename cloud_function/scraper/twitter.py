@@ -7,15 +7,16 @@ import pandas as pd
 import snscrape.modules.twitter as sntwitter
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
-from scraper.context import connect_database_sqlalchemy
-from scraper.custom_exceptions import UserModelNotFound, NewsScraperMissConfigured
-from orm.models import (
+from context import connect_database_sqlalchemy
+from custom_exceptions import UserModelNotFound, NewsScraperMissConfigured
+from models import (
     TwitterDataModelElonMusk,
     TwitterDataModelJeffBezos,
     TwitterDataModelBarackObama,
     TwitterDataModelJoeBiden,
     TwitterDataModelKamalaHarris,
 )
+from sentiment_analyzer import TwitterSentimentAnalyzer
 
 user_models = {
     'elonmusk': TwitterDataModelElonMusk,
@@ -52,6 +53,7 @@ class TwitterScraperBase:
     def start_scraping(query):
         tweets = sntwitter.TwitterSearchScraper(query).get_items()
         for tweet in tweets:
+            setattr(tweet, 'sentiment', TwitterSentimentAnalyzer().get_sentiment(tweet.content))
             yield tweet
 
     @staticmethod
@@ -95,6 +97,7 @@ class TwitterScraperBase:
                 id=data.id,
                 cashtags=self.check_cashtaged_tweet(data.cashtags),
                 content=data.content,
+                sentiment=data.sentiment,
                 conversation_id=data.conversationId,
                 coordinates=data.coordinates,
                 tweeted_at=data.date,
@@ -193,12 +196,12 @@ def scraping_data_from_hashtag():
 if __name__ == '__main__':
     postgres_engine: Engine = connect_database_sqlalchemy()
     scraping_type = 'news'
-    twitter_user = 'JeffBezos'
+    twitter_user = 'elonmusk'
     user_models.get(twitter_user).metadata.create_all(postgres_engine)
     with Session(postgres_engine) as session:
         if scraping_type == 'news':
             scraper = TwitterNewsScraper(user=twitter_user, database_session=session,
-                                         last_scraped_tweet='2022-04-22 17:06:01')
+                                         last_scraped_tweet='2022-10-10 17:06:01')
             batch = scraper.scraping_data_news()
         else:
             scraper = TwitterHistoryScraper(user=twitter_user, database_session=session)
@@ -207,7 +210,7 @@ if __name__ == '__main__':
     last_tweeted_at = scraper.load_scraped_data(engine=postgres_engine, scraped_batch=batch)
     df = pd.read_sql(
         """
-        select * from joe_biden
+        select * from elon_musk
         """,
         postgres_engine
     )
