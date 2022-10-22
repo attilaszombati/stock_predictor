@@ -9,9 +9,6 @@ nltk.downloader.download('vader_lexicon')
 
 class TwitterSentimentAnalyzer:
 
-    def __int__(self, text):
-        self.text = text
-
     @staticmethod
     def clean_text(text):
         text = text.lower()
