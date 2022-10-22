@@ -9,7 +9,7 @@ RUN pip install -r requirements.txt
 
 WORKDIR /srv
 
-COPY main.py setup.py build-image.sh sentiment_analyzer.py ./
+COPY main.py setup.py build-image.sh ./
 COPY utils utils
 COPY orm orm
 COPY scraper scraper
