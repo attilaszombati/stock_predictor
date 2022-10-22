@@ -55,7 +55,6 @@ class TwitterScraperBase:
         tweets = sntwitter.TwitterSearchScraper(query).get_items()
         for tweet in tweets:
             setattr(tweet, 'sentiment', TwitterSentimentAnalyzer().get_sentiment(tweet.content))
-            logger.warning(f'The sentiment of the tweet is: {tweet.sentiment}')
             yield tweet
 
     @staticmethod
