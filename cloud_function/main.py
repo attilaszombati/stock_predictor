@@ -28,7 +28,7 @@ def main(user: str = 'elonmusk', scraping_type: str = 'news'):
     with Session(postgres_engine) as session:
         if scraping_type == 'news':
             fingerprint = storage.get_fingerprint_for_user(
-                bucket_name='scraped_data_twitter',
+                bucket_name='twitter_data_collection',
                 file_name=f'{postgres_table}/fingerprint.csv'
             )
             scraper = TwitterNewsScraper(user=user, database_session=session, last_scraped_tweet=fingerprint)
@@ -48,10 +48,10 @@ def main(user: str = 'elonmusk', scraping_type: str = 'news'):
 
     if last_tweeted_at:
         user_df.to_parquet(path=f'/tmp/{postgres_table}_{last_tweeted_at}.pq', compression='snappy')
-        storage.save_data_to_cloud_storage(bucket_name='scraped_data_twitter',
+        storage.save_data_to_cloud_storage(bucket_name='twitter_data_collection',
                                            file_name=f'{postgres_table}/{last_tweeted_at}.pq',
                                            parquet_file=f'/tmp/{postgres_table}_{last_tweeted_at}.pq')
-        storage.set_fingerprint_for_user(bucket_name='scraped_data_twitter',
+        storage.set_fingerprint_for_user(bucket_name='twitter_data_collection',
                                          file_name=f'{postgres_table}/fingerprint.csv',
                                          fingerprint=last_tweeted_at)
 

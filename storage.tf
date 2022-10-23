@@ -6,8 +6,16 @@ resource "google_storage_bucket" "twitter_data_collection" {
 
 }
 
-resource "google_storage_bucket" "alpaca_data_collection" {
-  name     = "alpaca_data_collection"
+resource "google_storage_bucket" "crypto_data_collection" {
+  name     = "crypto_data_collection"
+  location = "us-central1"
+
+  storage_class = "REGIONAL"
+
+}
+
+resource "google_storage_bucket" "stock_data_collection" {
+  name     = "stock_data_collection"
   location = "us-central1"
 
   storage_class = "REGIONAL"
