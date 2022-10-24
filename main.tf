@@ -57,6 +57,29 @@ resource "google_cloud_run_service" "alpaca-data-scraper" {
   autogenerate_revision_name = true
 }
 
+resource "google_cloud_run_service" "stock_predictor_api" {
+  name     = "stock_predictor_api"
+  location = "us-central1"
+
+  template {
+    spec {
+      containers {
+        image = "gcr.io/attila-szombati-sandbox/predictor_api:${data.external.env.result["docker_image_tag"]}"
+        ports {
+          container_port = 8080
+        }
+      }
+      timeout_seconds      = 3600
+      service_account_name = google_service_account.cloud-run-service-account.email
+    }
+  }
+  traffic {
+    percent         = 100
+    latest_revision = true
+  }
+  autogenerate_revision_name = true
+}
+
 
 resource "google_cloud_scheduler_job" "cloudrun-scheduler" {
   name             = "cloudrun-scheduler"

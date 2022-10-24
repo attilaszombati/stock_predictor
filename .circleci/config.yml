@@ -10,12 +10,14 @@ workflows:
     jobs:
       - build_push_image_social_media_scraper
       - build_push_image_crypto_data_scraper
+      - build_push_image_predictor_api
       - terraform/fmt:
           checkout: true
           context: terraform
           requires:
             - build_push_image_social_media_scraper
             - build_push_image_crypto_data_scraper
+            - build_push_image_predictor_api
       - terraform/validate:
           checkout: true
           context: terraform
@@ -86,6 +88,27 @@ jobs:
       - run:
           name: Build crypto data scraper docker image
           command: ./alpaca_data_function/build-image.sh
+      - gcp-gcr/gcr-auth:
+          gcloud-service-key: GOOGLE_CLOUD_KEYS
+          google-project-id: GOOGLE_PROJECT_ID
+          google-compute-zone: GOOGLE_COMPUTE_ZONE
+      - gcp-gcr/push-image:
+          google-project-id: GOOGLE_PROJECT_ID
+          registry-url: "gcr.io"
+          image: $IMAGE_NAME
+          tag: latest,$CIRCLE_SHA1
+
+  build_push_image_predictor_api:
+    docker:
+      - image: cimg/python:3.9.1
+    executor: python/default
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: false
+      - run:
+          name: Build stock predictor API docker image
+          command: ./predictor_api/build-image.sh
       - gcp-gcr/gcr-auth:
           gcloud-service-key: GOOGLE_CLOUD_KEYS
           google-project-id: GOOGLE_PROJECT_ID

@@ -28,3 +28,10 @@ services:
     ports:
       - 5993:5993
 
+  predictor_api:
+    build: ./predictor_api
+    restart: always
+    container_name: predictor_api
+    ports:
+      - 8080:8080
+
