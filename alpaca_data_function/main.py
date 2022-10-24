@@ -233,7 +233,7 @@ def historical_data(
 
             gcs_storage.save_data_to_cloud_storage(bucket_name=bucket_name,
                                                    file_name=f'{symbol}/{first_bar_data}_{symbol}.pq',
-                                                   parquet_file=f'/tmp/{first_bar_data}_{symbol}.pq')
+                                                   file=f'/tmp/{first_bar_data}_{symbol}.pq')
 
         else:
             logger.warning(f'No data for {symbol} between {start} and {end}')
