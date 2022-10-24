@@ -4,7 +4,7 @@ provider "google" {
 }
 
 data "external" "env" {
-  program = ["${path.module}/crypto_data_function/env.sh"]
+  program = ["${path.module}/alpaca_data_function/env.sh"]
 }
 
 output "foo" {
