@@ -10,7 +10,6 @@ RUN pip install -r requirements.txt
 WORKDIR /srv
 
 COPY main.py ./
-COPY utils utils
 ENV PATH=/root/.local/bin:$PATH
 ENV PYTHONPATH=$PYTHONPATH:/srv
 EXPOSE 8080
