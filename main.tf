@@ -149,3 +149,26 @@ resource "google_cloud_scheduler_job" "stock-data-scraper-scheduler" {
     }
   }
 }
+
+resource "google_cloud_scheduler_job" "stock-predictor-scheduler" {
+  name             = "stock-predictor-scheduler"
+  description      = "Invoke cloud run"
+  schedule         = "0 0 * * *"
+  time_zone        = "Europe/Budapest"
+  attempt_deadline = "320s"
+
+  retry_config {
+    retry_count = 1
+  }
+
+
+  http_target {
+    http_method = "POST"
+    uri         = google_cloud_run_service.stock-predictor-api.status.0.url
+    headers     = { "Content-Type" : "application/json", "User-Agent" : "Google-Cloud-Scheduler" }
+    body        = base64encode("{\"TWITTER_POST_DATA\": [\"0\"]}")
+    oidc_token {
+      service_account_email = google_service_account.cloudrun-invoker.email
+    }
+  }
+}
