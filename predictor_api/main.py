@@ -1,6 +1,7 @@
 # pylint:disable=no-name-in-module, unexpected-keyword-arg
 import os
 
+import numpy as np
 from flask import Flask, request
 from tensorflow import keras
 import logging
@@ -16,11 +17,17 @@ def main(data):
     return get_model_from_gcs.predict(data)
 
 
+def convert_to_np_array(twitter_data):
+    convert = [twitter_data]
+    return np.asarray(convert)
+
+
 @app.route("/", methods=['POST'])
 def handler():
     data = request.get_json()
     print(data)
     twitter_data = data.get('TWITTER_POST_DATA', [])
+    data = convert_to_np_array(twitter_data)
     prediction = main(data=twitter_data)
     return {'prediction': prediction}
 
