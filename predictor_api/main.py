@@ -28,7 +28,7 @@ def handler():
     print(data)
     twitter_data = data.get('TWITTER_POST_DATA', [])
     data = convert_to_np_array(twitter_data)
-    prediction = main(data=twitter_data)
+    prediction = main(data=data)
     return {'prediction': prediction}
 
 
