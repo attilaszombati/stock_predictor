@@ -4,17 +4,26 @@ import os
 import numpy as np
 from flask import Flask, request
 from tensorflow import keras
+from sklearn.preprocessing import MinMaxScaler
 import logging
 
 app = Flask(__name__)
 logger = logging.getLogger('twitter-scraper')
 
 
+def denormalize_result(normalized_data):
+    scaler = MinMaxScaler(feature_range=(0, 1))
+    predicted_stock_price = scaler.inverse_transform(normalized_data)
+    return predicted_stock_price
+
+
 def main(data):
     logger.warning(f"Input data is : {data}")
     get_model_from_gcs = keras.models.load_model('gs://stock_predictor_bucket/my_model')
     logger.warning(f"Model is : {get_model_from_gcs}")
-    return get_model_from_gcs.predict(data)
+    predicted_data = get_model_from_gcs.predict(data)
+    denormalized_prediction = denormalize_result(normalized_data=predicted_data)
+    return denormalized_prediction
 
 
 def convert_to_np_array(twitter_data):
