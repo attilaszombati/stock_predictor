@@ -29,6 +29,7 @@ def handler():
     twitter_data = data.get('TWITTER_POST_DATA', [])
     data = convert_to_np_array(twitter_data)
     prediction = main(data=data)
+    logger.warning(f'The predicted data is : {prediction.item(0)}')
     return {'prediction': prediction.item(0)}
 
 
