@@ -21,4 +21,9 @@ class TwitterSentimentAnalyzer:
     def get_sentiment(self, text):
         text = self.clean_text(text)
         score = SentimentIntensityAnalyzer().polarity_scores(text)
-        return score['compound']
+        if score['compound'] > 0.05:
+            return 1
+        elif score['compound'] < -0.05:
+            return -1
+        else:
+            return 0
