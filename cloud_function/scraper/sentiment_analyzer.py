@@ -16,14 +16,10 @@ class TwitterSentimentAnalyzer:
         text = re.sub(r"(@[A-Za-z0–9]+) | ([0-9A-Za-z \t]) | (\w+:\/\/\S+)", " ", text)
         text = re.sub(r"[^a-zA-Z.!?']", " ", text)
         text = re.sub(r" +", " ", text)
+        text = re.sub(r'http\S+', '', text)
         return text
 
     def get_sentiment(self, text):
         text = self.clean_text(text)
         score = SentimentIntensityAnalyzer().polarity_scores(text)
-        if score['compound'] > 0.05:
-            return 1
-        elif score['compound'] < -0.05:
-            return -1
-        else:
-            return 0
+        return score['compound'], score['pos'], score['neg'], score['neu']
