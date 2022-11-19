@@ -153,7 +153,7 @@ resource "google_cloud_scheduler_job" "stock-data-scraper-scheduler" {
 resource "google_cloud_scheduler_job" "stock-predictor-scheduler" {
   name             = "stock-predictor-scheduler"
   description      = "Invoke cloud run"
-  schedule         = "0 0 * * *"
+  schedule         = "0 * * * *"
   time_zone        = "Europe/Budapest"
   attempt_deadline = "320s"
 
@@ -166,7 +166,7 @@ resource "google_cloud_scheduler_job" "stock-predictor-scheduler" {
     http_method = "POST"
     uri         = google_cloud_run_service.stock-predictor-api.status.0.url
     headers     = { "Content-Type" : "application/json", "User-Agent" : "Google-Cloud-Scheduler" }
-    body        = base64encode("{\"TWITTER_POST_DATA\": [0.14267970238319408, 0.19790089290376484, 0.013730006837172324,0.005646384628349907,0.01462168929875459,0.004935303837273346,0.05084750606177942,0.00753864697865456,0.025277472825391643,0.01529694756747754]}")
+    body        = base64encode("{\"MODEL_VERSION\": \"latest\"}")
     oidc_token {
       service_account_email = google_service_account.cloudrun-invoker.email
     }

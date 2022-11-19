@@ -9,6 +9,7 @@ RUN pip install -r requirements.txt
 
 WORKDIR /srv
 
+COPY utils utils
 COPY main.py ./
 ENV PATH=/root/.local/bin:$PATH
 ENV PYTHONPATH=$PYTHONPATH:/srv

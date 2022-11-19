@@ -252,10 +252,14 @@ def historical_data(
 def handler():
     data = request.get_json()
     logger.warning(f'The data is : {data}')
-    symbols = data.get('SYMBOLS', 'BTCUSD')
+    symbols = data.get('SYMBOLS', '')
+    if symbols is None:
+        raise ValueError('No symbols provided')
     start_timestamp = data.get('START_DATE', '2009-01-01T00:00:00-00:00')
     bucket_name = data.get('BUCKET_NAME', 'crypto_data_collection')
     symbol_type = data.get('SYMBOL_TYPE', 'crypto')
+    if symbol_type not in ['crypto', 'stock']:
+        raise ValueError('Symbol type must be crypto or stock')
 
     for symbol in symbols:
         if data.get('SCRAPING_TYPE') == 'history':
