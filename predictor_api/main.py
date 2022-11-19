@@ -5,22 +5,15 @@ from google.cloud import bigquery
 import numpy as np
 from flask import Flask, request
 from tensorflow import keras
-from sklearn.preprocessing import MinMaxScaler
 import logging
 
-from predictor_api.utils.cloud_storage import CloudStorageUtils
+from utils.cloud_storage import CloudStorageUtils
 
 app = Flask(__name__)
 logger = logging.getLogger('twitter-scraper')
 
 PREDICTOR_BUCKET = 'stock_predictor_bucket'
 MODEL_NAME = 'TSLA_ELON_MUSK'
-
-
-def denormalize_result(normalized_data):
-    scaler = MinMaxScaler(feature_range=(0, 1))
-    predicted_stock_price = scaler.inverse_transform(normalized_data)
-    return predicted_stock_price
 
 
 def main(data, predictor_version: str):
@@ -51,7 +44,8 @@ def convert_input_to_lstm_format(dataframe):
 
 
 def get_data_from_big_query():
-    client = bigquery.Client()
+    client = bigquery.Client(project='attila-szombati-sandbox', location='us-central1')
+
     query = """
         SELECT 
           tweeted_at
@@ -96,8 +90,7 @@ def handler():
                                                              file_name='latest_version.csv')
     twitter_data_df = get_data_from_big_query()
     input_dataset = convert_input_to_lstm_format(twitter_data_df)
-    data = convert_input_to_lstm_format(input_dataset)
-    prediction = main(data=data, predictor_version=predictor_version)
+    prediction = main(data=input_dataset, predictor_version=predictor_version)
     logger.warning(f'The predicted data is : {prediction.item(0)}')
     return {'prediction': prediction.item(0)}
 
