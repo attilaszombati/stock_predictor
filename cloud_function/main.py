@@ -50,7 +50,7 @@ def main(user: str = 'elonmusk', scraping_type: str = 'news'):
         user_df.to_parquet(path=f'/tmp/{postgres_table}_{last_tweeted_at}.pq', compression='snappy')
         storage.save_data_to_cloud_storage(bucket_name='twitter_data_collection',
                                            file_name=f'{postgres_table}/{last_tweeted_at}.pq',
-                                           parquet_file=f'/tmp/{postgres_table}_{last_tweeted_at}.pq')
+                                           file=f'/tmp/{postgres_table}_{last_tweeted_at}.pq')
         storage.set_fingerprint_for_user(bucket_name='twitter_data_collection',
                                          file_name=f'{postgres_table}/fingerprint.csv',
                                          fingerprint=last_tweeted_at)
@@ -59,9 +59,12 @@ def main(user: str = 'elonmusk', scraping_type: str = 'news'):
 @app.route("/", methods=['POST'])
 def handler():
     data = request.get_json()
-    print(data)
     users = data.get('TWITTER_USERS', [])
+    if users is None:
+        raise ValueError('No users provided')
     scraping_type = data.get('SCRAPING_TYPE', 'since')
+    if scraping_type not in ['since', 'news']:
+        raise ValueError('Scraping type not supported')
     for user in users:
         main(user=user, scraping_type=scraping_type)
     return {'done': 1}

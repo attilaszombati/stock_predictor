@@ -21,7 +21,8 @@ resource "google_project_iam_member" "cloud-run-roles" {
   project = "attila-szombati-sandbox"
   for_each = toset([
     "roles/secretmanager.admin",
-    "roles/storage.admin"
+    "roles/storage.admin",
+    "roles/bigquery.admin"
   ])
   role   = each.key
   member = "serviceAccount:${google_service_account.cloud-run-service-account.email}"

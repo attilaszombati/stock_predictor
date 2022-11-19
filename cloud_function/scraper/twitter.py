@@ -54,7 +54,11 @@ class TwitterScraperBase:
     def start_scraping(query):
         tweets = sntwitter.TwitterSearchScraper(query).get_items()
         for tweet in tweets:
-            setattr(tweet, 'sentiment', TwitterSentimentAnalyzer().get_sentiment(tweet.content))
+            compound, pos, neg, neu = TwitterSentimentAnalyzer().get_sentiment(tweet.content)
+            setattr(tweet, 'sentiment_compound', compound)
+            setattr(tweet, 'sentiment_pos', pos)
+            setattr(tweet, 'sentiment_neg', neg)
+            setattr(tweet, 'sentiment_neu', neu)
             yield tweet
 
     @staticmethod
@@ -98,7 +102,10 @@ class TwitterScraperBase:
                 id=data.id,
                 cashtags=self.check_cashtaged_tweet(data.cashtags),
                 content=data.content,
-                sentiment=data.sentiment,
+                sentiment_compound=data.sentiment_compound,
+                sentiment_pos=data.sentiment_pos,
+                sentiment_neg=data.sentiment_neg,
+                sentiment_neu=data.sentiment_neu,
                 conversation_id=data.conversationId,
                 coordinates=data.coordinates,
                 tweeted_at=data.date,
@@ -202,7 +209,7 @@ if __name__ == '__main__':
     with Session(postgres_engine) as session:
         if scraping_type == 'news':
             scraper = TwitterNewsScraper(user=twitter_user, database_session=session,
-                                         last_scraped_tweet='2022-10-10 17:06:01')
+                                         last_scraped_tweet='2022-11-08 17:06:01')
             batch = scraper.scraping_data_news()
         else:
             scraper = TwitterHistoryScraper(user=twitter_user, database_session=session)
