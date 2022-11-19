@@ -21,18 +21,9 @@ resource "google_project_iam_member" "cloud-run-roles" {
   project = "attila-szombati-sandbox"
   for_each = toset([
     "roles/secretmanager.admin",
-    "roles/storage.admin"
+    "roles/storage.admin",
+    "roles/bigquery.admin"
   ])
   role   = each.key
   member = "serviceAccount:${google_service_account.cloud-run-service-account.email}"
-}
-
-resource "google_bigquery_table_iam_binding" "bigquery_reader_iam" {
-  project    = "attila-szombati-sandbox"
-  dataset_id = "cl_layer_us"
-  table_id   = "elon_musk_tsla"
-  role       = "roles/bigquery.dataViewer"
-  members = [
-    "serviceAccount:${google_service_account.cloud-run-service-account.email}"
-  ]
 }
