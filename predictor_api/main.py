@@ -1,24 +1,26 @@
-# pylint:disable=no-name-in-module, unexpected-keyword-arg
+# pylint:disable=no-name-in-module, unexpected-keyword-arg, invalid-name
+import logging
 import os
 
-from google.cloud import bigquery
 import numpy as np
 from flask import Flask, request
+from google.cloud import bigquery
 from tensorflow import keras
-import logging
 
 from utils.cloud_storage import CloudStorageUtils
 
 app = Flask(__name__)
-logger = logging.getLogger('twitter-scraper')
+logger = logging.getLogger("twitter-scraper")
 
-PREDICTOR_BUCKET = 'stock_predictor_bucket'
-MODEL_NAME = 'TSLA_ELON_MUSK'
+PREDICTOR_BUCKET = "stock_predictor_bucket"
+MODEL_NAME = "TSLA_ELON_MUSK"
 
 
 def main(data, predictor_version: str):
     logger.warning(f"Input data is : {data}")
-    get_model_from_gcs = keras.models.load_model(f'gs://{PREDICTOR_BUCKET}/{MODEL_NAME}_{predictor_version}')
+    get_model_from_gcs = keras.models.load_model(
+        f"gs://{PREDICTOR_BUCKET}/{MODEL_NAME}_{predictor_version}"
+    )
     logger.warning(f"Model is : {get_model_from_gcs}")
     predicted_data = get_model_from_gcs.predict(data)
     return predicted_data
@@ -38,13 +40,15 @@ def convert_input_to_lstm_format(dataframe):
     dates = df_as_np[:, DATES_COLUMN]
 
     middle_matrix = df_as_np[:, FEATURE_START_INDEX:-1]
-    features = middle_matrix.reshape((len(dates), middle_matrix.shape[1], 1)).astype(np.float32)
+    features = middle_matrix.reshape((len(dates), middle_matrix.shape[1], 1)).astype(
+        np.float32
+    )
     logger.warning(f"Features are : {features}")
     return features
 
 
 def get_data_from_big_query():
-    client = bigquery.Client(project='attila-szombati-sandbox', location='us-central1')
+    client = bigquery.Client(project="attila-szombati-sandbox", location="us-central1")
 
     query = """
         SELECT 
@@ -79,20 +83,21 @@ def get_data_from_big_query():
     return df
 
 
-@app.route("/", methods=['POST'])
+@app.route("/", methods=["POST"])
 def handler():
     storage = CloudStorageUtils()
     data = request.get_json()
-    logger.warning(f'Input data is: {data}')
-    predictor_version = data.get('PREDICTOR_VERSION', 'latest')
-    if predictor_version == 'latest':
-        predictor_version = storage.get_fingerprint_for_user(bucket_name=PREDICTOR_BUCKET,
-                                                             file_name='latest_version.csv')
+    logger.warning(f"Input data is: {data}")
+    predictor_version = data.get("PREDICTOR_VERSION", "latest")
+    if predictor_version == "latest":
+        predictor_version = storage.get_fingerprint_for_user(
+            bucket_name=PREDICTOR_BUCKET, file_name="latest_version.csv"
+        )
     twitter_data_df = get_data_from_big_query()
     input_dataset = convert_input_to_lstm_format(twitter_data_df)
     prediction = main(data=input_dataset, predictor_version=predictor_version)
-    logger.warning(f'The predicted data is : {prediction.item(0)}')
-    return {'prediction': prediction.item(0)}
+    logger.warning(f"The predicted data is : {prediction.item(0)}")
+    return {"prediction": prediction.item(0)}
 
 
 if __name__ == "__main__":

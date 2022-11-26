@@ -13,7 +13,7 @@ from orm.models import RedditOfficialApiModel
 reddit = Reddit(
     client_id=os.getenv("REDDIT_CLIENT_ID", ""),
     client_secret=os.getenv("REDDIT_CLIENT_SECRET", ""),
-    user_agent=os.getenv("REDDIT_USER_AGENT", "")
+    user_agent=os.getenv("REDDIT_USER_AGENT", ""),
 )
 
 
@@ -30,7 +30,7 @@ def get_official_reddit_data():
         batch.append(post)
         if i % 100 == 0:
             yield from batch
-            print('We will wait..')
+            print("We will wait..")
             time.sleep(100)
             batch = []
         else:
@@ -45,7 +45,9 @@ def official_reddit_api():
             score=data.score,
             num_comments=data.num_comments,
             self_text=data.selftext,
-            created_at=datetime.fromtimestamp(data.created).strftime('%Y-%m-%d %H:%M:%S.%f'),
+            created_at=datetime.fromtimestamp(data.created).strftime(
+                "%Y-%m-%d %H:%M:%S.%f"
+            ),
             total_awards_received=data.total_awards_received,
             post_id=data.id,
             subreddit=data.subreddit,
@@ -65,10 +67,12 @@ def load_scraped_data(engine: Engine):
             sess.add(fixture)
             sess.commit()
 
-        return str(RedditOfficialApiModel.get_newest_reddit_elem(sess).posted_at).replace(" ", "-")
+        return str(
+            RedditOfficialApiModel.get_newest_reddit_elem(sess).posted_at
+        ).replace(" ", "-")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     postgres_engine: Engine = connect_database_sqlalchemy()
     load_scraped_data(engine=postgres_engine)
 
@@ -77,7 +81,9 @@ if __name__ == '__main__':
         """
         select * from wallstreetbets_official_api
         """,
-        postgres_engine
+        postgres_engine,
     )
 
-    df.to_parquet(path=f'wallstreetbets_official_api_{last_tweeted_at}.pq', compression='snappy')
+    df.to_parquet(
+        path=f"wallstreetbets_official_api_{last_tweeted_at}.pq", compression="snappy"
+    )

@@ -91,6 +91,8 @@ disable=raw-checker-failed,
         missing-function-docstring,
         logging-fstring-interpolation,
         too-few-public-methods,
+        unexpected-special-method-signature,
+        attribute-defined-outside-init,
         fixme
 
 # Enable the message, report, category or checker with the given id(s). You can

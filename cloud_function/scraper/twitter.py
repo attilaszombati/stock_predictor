@@ -20,22 +20,21 @@ from orm.models import (
 )
 
 user_models = {
-    'elonmusk': TwitterDataModelElonMusk,
-    'JeffBezos': TwitterDataModelJeffBezos,
-    'BarackObama': TwitterDataModelBarackObama,
-    'JoeBiden': TwitterDataModelJoeBiden,
-    'KamalaHarris': TwitterDataModelKamalaHarris,
+    "elonmusk": TwitterDataModelElonMusk,
+    "JeffBezos": TwitterDataModelJeffBezos,
+    "BarackObama": TwitterDataModelBarackObama,
+    "JoeBiden": TwitterDataModelJoeBiden,
+    "KamalaHarris": TwitterDataModelKamalaHarris,
 }
 
-logger = logging.getLogger('twitter-scraper')
+logger = logging.getLogger("twitter-scraper")
 
 
 class TwitterScraperBase:
-
     def __init__(self, user: str, database_session):
         self.user = user
         self.query_time = None
-        self.since_time_str = 'since_time:964381815'
+        self.since_time_str = "since_time:964381815"
         self.since_time_int = 964381815
         self.time_delta = 3
         self.session: Session = database_session
@@ -45,26 +44,32 @@ class TwitterScraperBase:
             raise UserModelNotFound(self.user)
 
     def get_last_scraped_tweet(self):
-        return user_models.get(self.user).get_oldest_tweeted_at_elem(session=self.session)
+        return user_models.get(self.user).get_oldest_tweeted_at_elem(
+            session=self.session
+        )
 
     def get_newest_scraped_tweet(self):
-        return user_models.get(self.user).get_newest_tweeted_at_elem(session=self.session)
+        return user_models.get(self.user).get_newest_tweeted_at_elem(
+            session=self.session
+        )
 
     @staticmethod
     def start_scraping(query):
         tweets = sntwitter.TwitterSearchScraper(query).get_items()
         for tweet in tweets:
-            compound, pos, neg, neu = TwitterSentimentAnalyzer().get_sentiment(tweet.content)
-            setattr(tweet, 'sentiment_compound', compound)
-            setattr(tweet, 'sentiment_pos', pos)
-            setattr(tweet, 'sentiment_neg', neg)
-            setattr(tweet, 'sentiment_neu', neu)
+            compound, pos, neg, neu = TwitterSentimentAnalyzer().get_sentiment(
+                tweet.content
+            )
+            setattr(tweet, "sentiment_compound", compound)
+            setattr(tweet, "sentiment_pos", pos)
+            setattr(tweet, "sentiment_neg", neg)
+            setattr(tweet, "sentiment_neu", neu)
             yield tweet
 
     @staticmethod
     def check_mentioned(data):
         if data is not None:
-            return ''.join([mentioned.username for mentioned in data])
+            return "".join([mentioned.username for mentioned in data])
         return data
 
     @staticmethod
@@ -72,10 +77,11 @@ class TwitterScraperBase:
         if data is not None:
             return str(data.url)
         return data
+
     @staticmethod
     def check_cashtaged_tweet(data):
         if data is not None:
-            return ','.join(link for link in data)
+            return ",".join(link for link in data)
         return data
 
     @staticmethod
@@ -87,13 +93,13 @@ class TwitterScraperBase:
     @staticmethod
     def check_outlinks(data):
         if data is not None:
-            return ','.join(link for link in data)
+            return ",".join(link for link in data)
         return data
 
     @staticmethod
     def check_hashtags(data):
         if data is not None:
-            return ','.join(hashtag for hashtag in data)
+            return ",".join(hashtag for hashtag in data)
         return data
 
     def create_models_from_scraping(self, scraping_batch):
@@ -132,7 +138,9 @@ class TwitterScraperBase:
 
     def load_scraped_data(self, scraped_batch, engine: Engine):
         with Session(engine) as sess:
-            for fixture in self.create_models_from_scraping(scraping_batch=scraped_batch):
+            for fixture in self.create_models_from_scraping(
+                scraping_batch=scraped_batch
+            ):
                 sess.add(fixture)
                 sess.commit()
 
@@ -149,33 +157,40 @@ class TwitterNewsScraper(TwitterScraperBase):
 
     def set_query_time_from_last_scraped(self):
         scraper_time = int(self.last_scraped_tweet.timestamp()) + 7201
-        self.query_time = f'since_time:{scraper_time}'
-        logger.warning(f'New tweets for the user : {self.user} will be scraped from : {self.last_scraped_tweet}')
+        self.query_time = f"since_time:{scraper_time}"
+        logger.warning(
+            f"New tweets for the user : {self.user} will be scraped from : {self.last_scraped_tweet}"
+        )
         return self.query_time
 
     def scraping_data_news(self, until_day=1):
         if self.last_scraped_tweet:
             since_time = self.set_query_time_from_last_scraped()
         else:
-            raise NewsScraperMissConfigured(f"Check the fingerprint file for the user : {self.user}")
+            raise NewsScraperMissConfigured(
+                f"Check the fingerprint file for the user : {self.user}"
+            )
 
         day_in_timestamp = 86400
         until_time = int(time.time() - (day_in_timestamp * until_day))
-        logger.warning(f'until_time : {datetime.utcfromtimestamp(until_time).strftime("%Y-%m-%d %H:%M:%S")}')
-        query = f'from:{self.user} {since_time} until_time:{until_time}'
-        logger.warning(f'The search query is : {query}')
+        logger.warning(
+            f'until_time : {datetime.utcfromtimestamp(until_time).strftime("%Y-%m-%d %H:%M:%S")}'
+        )
+        query = f"from:{self.user} {since_time} until_time:{until_time}"
+        logger.warning(f"The search query is : {query}")
         yield from self.start_scraping(query)
 
 
 class TwitterHistoryScraper(TwitterScraperBase):
-
     def __init__(self, user: str, database_session: Session):
         super().__init__(user, database_session)
 
     def set_query_time_until_last_scraped(self):
         last_record_time = self.get_last_scraped_tweet().tweeted_at
-        logger.warning(f'{self.user} will be scraped from the far far away until: {last_record_time}')
-        self.query_time = f'until_time:{last_record_time.timestamp()}'
+        logger.warning(
+            f"{self.user} will be scraped from the far far away until: {last_record_time}"
+        )
+        self.query_time = f"until_time:{last_record_time.timestamp()}"
         return self.query_time
 
     def set_query_for_history_scraper(self):
@@ -183,44 +198,52 @@ class TwitterHistoryScraper(TwitterScraperBase):
             scraper_time = self.set_query_time_until_last_scraped()
         else:
             scraper_time = self.since_time_str
-            logger.warning(f'{self.user} will be scraped from the far far away until the previous day')
+            logger.warning(
+                f"{self.user} will be scraped from the far far away until the previous day"
+            )
 
         day_in_timestamp = 86400
         until_time = int(time.time() - (day_in_timestamp * 1))
-        query = f'from:{self.user} {scraper_time[:-2]} until_time:{until_time}'
-        logger.warning(f'The search query is : {query}')
+        query = f"from:{self.user} {scraper_time[:-2]} until_time:{until_time}"
+        logger.warning(f"The search query is : {query}")
         yield from self.start_scraping(query)
 
 
 def scraping_data_from_hashtag():
-    max_item = sntwitter.TwitterHashtagScraper('bitcoin').get_items()
+    max_item = sntwitter.TwitterHashtagScraper("bitcoin").get_items()
     preprocess = sorted(
-        max_item, key=lambda x: x.replyCount > 10 and x.retweetCount > 10 and x.likeCount > 10
+        max_item,
+        key=lambda x: x.replyCount > 10 and x.retweetCount > 10 and x.likeCount > 10,
     )
     for tweet in preprocess:
         yield tweet
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     postgres_engine: Engine = connect_database_sqlalchemy()
-    scraping_type = 'news'
-    twitter_user = 'elonmusk'
+    scraping_type = "news"
+    twitter_user = "elonmusk"
     user_models.get(twitter_user).metadata.create_all(postgres_engine)
     with Session(postgres_engine) as session:
-        if scraping_type == 'news':
-            scraper = TwitterNewsScraper(user=twitter_user, database_session=session,
-                                         last_scraped_tweet='2022-11-08 17:06:01')
+        if scraping_type == "news":
+            scraper = TwitterNewsScraper(
+                user=twitter_user,
+                database_session=session,
+                last_scraped_tweet="2022-11-08 17:06:01",
+            )
             batch = scraper.scraping_data_news()
         else:
             scraper = TwitterHistoryScraper(user=twitter_user, database_session=session)
             batch = scraper.set_query_for_history_scraper()
 
-    last_tweeted_at = scraper.load_scraped_data(engine=postgres_engine, scraped_batch=batch)
+    last_tweeted_at = scraper.load_scraped_data(
+        engine=postgres_engine, scraped_batch=batch
+    )
     df = pd.read_sql(
         """
         select * from elon_musk
         """,
-        postgres_engine
+        postgres_engine,
     )
 
-    df.to_parquet(path=f'{twitter_user}_{last_tweeted_at}.pq', compression='snappy')
+    df.to_parquet(path=f"{twitter_user}_{last_tweeted_at}.pq", compression="snappy")
