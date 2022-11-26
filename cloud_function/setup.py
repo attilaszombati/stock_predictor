@@ -32,6 +32,5 @@ setuptools.setup(
         "google-api-python-client==2.45.0",
         "oauth2client==4.1.3",
         "pydantic~=1.9.0",
-    ]
-
+    ],
 )

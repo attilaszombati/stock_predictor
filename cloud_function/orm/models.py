@@ -42,7 +42,7 @@ class TwitterBaseModel(Base):
     user_name = Column(VARCHAR(1000))
     created_at = Column(DATETIME, server_default=func.now())
 
-    __mapper_args__ = {'eager_defaults': True}
+    __mapper_args__ = {"eager_defaults": True}
 
     @classmethod
     def get_newest_tweeted_at_elem(cls, session: Session):
@@ -62,27 +62,27 @@ class TwitterBaseModel(Base):
 
 
 class TwitterDataModelElonMusk(TwitterBaseModel):
-    __tablename__ = 'elon_musk'
+    __tablename__ = "elon_musk"
 
 
 class TwitterDataModelJeffBezos(TwitterBaseModel):
-    __tablename__ = 'jeff_bezos'
+    __tablename__ = "jeff_bezos"
 
 
 class TwitterDataModelBarackObama(TwitterBaseModel):
-    __tablename__ = 'barack_obama'
+    __tablename__ = "barack_obama"
 
 
 class TwitterDataModelJoeBiden(TwitterBaseModel):
-    __tablename__ = 'joe_biden'
+    __tablename__ = "joe_biden"
 
 
 class TwitterDataModelKamalaHarris(TwitterBaseModel):
-    __tablename__ = 'kamala_harris'
+    __tablename__ = "kamala_harris"
 
 
 class RedditDataModel(Base):
-    __tablename__ = 'wallstreetbets'
+    __tablename__ = "wallstreetbets"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     author = Column(VARCHAR(1000), nullable=True)
@@ -112,7 +112,7 @@ class RedditDataModel(Base):
 
 
 class RedditOfficialApiModel(Base):
-    __tablename__ = 'wallstreetbets_official_api'
+    __tablename__ = "wallstreetbets_official_api"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     author = Column(VARCHAR(1000), nullable=True)
