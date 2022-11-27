@@ -84,8 +84,7 @@ resource "google_cloud_run_service" "stock-predictor-api" {
 resource "google_cloud_scheduler_job" "cloudrun-scheduler" {
   name             = "cloudrun-scheduler"
   description      = "Invoke cloud run"
-  schedule         = "30 9 1-31/7 * *"
-  time_zone        = "Europe/Budapest"
+  schedule         = "30 12 * * *" # every day at 12:30 UTC (UTC-4 = 8:30 AM EST)
   attempt_deadline = "320s"
 
   retry_config {
@@ -108,7 +107,6 @@ resource "google_cloud_scheduler_job" "crypto-data-scraper-scheduler" {
   name             = "crypto-data-scraper-scheduler"
   description      = "Invoke cloud run"
   schedule         = "30 12 * * *" # every day at 12:30 UTC (UTC-4 = 8:30 AM EST)
-  time_zone        = "Europe/Budapest"
   attempt_deadline = "320s"
 
   retry_config {
