@@ -107,7 +107,7 @@ resource "google_cloud_scheduler_job" "cloudrun-scheduler" {
 resource "google_cloud_scheduler_job" "crypto-data-scraper-scheduler" {
   name             = "crypto-data-scraper-scheduler"
   description      = "Invoke cloud run"
-  schedule         = "0 * * * *"
+  schedule         = "30 12 * * *" # every day at 12:30 UTC (UTC-4 = 8:30 AM EST)
   time_zone        = "Europe/Budapest"
   attempt_deadline = "320s"
 
@@ -130,8 +130,7 @@ resource "google_cloud_scheduler_job" "crypto-data-scraper-scheduler" {
 resource "google_cloud_scheduler_job" "stock-data-scraper-scheduler" {
   name             = "stock-data-scraper-scheduler"
   description      = "Invoke cloud run"
-  schedule         = "0 * * * *"
-  time_zone        = "Europe/Budapest"
+  schedule         = "30 13 * * *" # every day at 12:30 UTC (UTC-4 = 8:30 AM EST)
   attempt_deadline = "320s"
 
   retry_config {
@@ -153,8 +152,7 @@ resource "google_cloud_scheduler_job" "stock-data-scraper-scheduler" {
 resource "google_cloud_scheduler_job" "stock-predictor-scheduler" {
   name             = "stock-predictor-scheduler"
   description      = "Invoke cloud run"
-  schedule         = "0 * * * *"
-  time_zone        = "Europe/Budapest"
+  schedule         = "0 14 * * *" # every day at 13:00 UTC (UTC-4 = 9:00 AM EST)
   attempt_deadline = "320s"
 
   retry_config {
