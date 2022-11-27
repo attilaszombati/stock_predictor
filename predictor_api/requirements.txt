@@ -10,3 +10,4 @@ google-cloud-bigquery==3.3.6
 pandas==1.4.1
 db-dtypes==1.0.4
 black==22.10.0
+alpaca-trade-api==2.3.0

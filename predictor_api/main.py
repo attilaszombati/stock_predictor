@@ -1,8 +1,15 @@
-# pylint:disable=no-name-in-module, unexpected-keyword-arg, invalid-name
+# pylint:disable=no-name-in-module, unexpected-keyword-arg, invalid-name, too-many-locals
 import logging
 import os
 
 import numpy as np
+from alpaca.trading import (
+    MarketOrderRequest,
+    TimeInForce,
+    TradingClient,
+    GetOrdersRequest,
+)
+from alpaca.trading.enums import OrderSide
 from flask import Flask, request
 from google.cloud import bigquery
 from tensorflow import keras
@@ -55,12 +62,6 @@ def get_data_from_big_query():
           tweeted_at
           , close
           , diff_after_1_day
-          , diff_after_2_day
-          , diff_after_3_day
-          , diff_after_4_day
-          , diff_after_5_day
-          , diff_after_6_day
-          , diff_after_7_day
           , aggregated_sentiment_compoun
           , aggregated_sentiment_neg
           , aggregated_sentiment_neu
@@ -71,8 +72,7 @@ def get_data_from_big_query():
           , aggregated_reply_count
           , aggregated_retweet_count
         FROM `attila-szombati-sandbox.cl_layer_us.elon_musk_tsla`
-        ORDER BY tweeted_at DESC
-        LIMIT 1
+        WHERE DATE_DIFF(CURRENT_DATE(), tweeted_at, DAY) = 1
     """
 
     query_job = client.query(query)
@@ -94,9 +94,83 @@ def handler():
             bucket_name=PREDICTOR_BUCKET, file_name="latest_version.csv"
         )
     twitter_data_df = get_data_from_big_query()
+    if twitter_data_df.empty:
+        return "No data to predict, next prediction will be in 24 hours"
     input_dataset = convert_input_to_lstm_format(twitter_data_df)
     prediction = main(data=input_dataset, predictor_version=predictor_version)
     logger.warning(f"The predicted data is : {prediction.item(0)}")
+
+    money = [1000]
+
+    prev_day_close = twitter_data_df["close"].iloc[0]
+    logger.warning(f"Previous day close is : {prev_day_close}")
+
+    api = TradingClient(
+        "PKM7L9DOBVFYTY56MJPR",
+        "dd8eB5zL3YOQuLveUL2fw34gXA8vur80AkV1yV14",
+        url_override="https://paper-api.alpaca.markets",
+    )
+
+    request_params_buy = GetOrdersRequest(status="open", side=OrderSide.BUY)
+
+    request_params_sell = GetOrdersRequest(status="open", side=OrderSide.SELL)
+
+    buy_orders = api.get_orders(filter=request_params_buy)
+    sell_orders = api.get_orders(filter=request_params_sell)
+
+    if prediction.item(0) > prev_day_close:
+        logger.warning("Prediction is higher than previous day close")
+
+        if len(buy_orders) == 0:
+            logger.warning("No open orders, creating one")
+            market_order_data = MarketOrderRequest(
+                symbol="BTC/USD",
+                notional=money[-1],
+                side=OrderSide.BUY,
+                time_in_force=TimeInForce.GTC,
+            )
+        elif len(sell_orders) == 1:
+            logger.warning("There are open sell orders, cancelling them")
+            position = api.get_all_positions()
+            new_money = position[0].market_value
+            money.append(new_money)
+            api.close_all_positions(cancel_orders=True)
+            market_order_data = MarketOrderRequest(
+                symbol="BTC/USD",
+                notional=money[-1],
+                side=OrderSide.BUY,
+                time_in_force=TimeInForce.GTC,
+            )
+        else:
+            logger.warning("There are open buy orders, doing nothing")
+    else:
+        logger.warning("Prediction is lower than previous day close")
+
+        if len(sell_orders) == 0:
+            logger.warning("No open orders, creating one")
+            market_order_data = MarketOrderRequest(
+                symbol="BTC/USD",
+                notional=money[-1],
+                side=OrderSide.SELL,
+                time_in_force=TimeInForce.GTC,
+            )
+        elif len(buy_orders) == 1:
+            logger.warning("There are open buy orders, cancelling them")
+            position = api.get_all_positions()
+            new_money = position[0].market_value
+            money.append(new_money)
+            api.close_all_positions(cancel_orders=True)
+            market_order_data = MarketOrderRequest(
+                symbol="BTC/USD",
+                notional=money[-1],
+                side=OrderSide.SELL,
+                time_in_force=TimeInForce.GTC,
+            )
+        else:
+            logger.warning("There are open sell orders, doing nothing")
+
+    api.submit_order(order_data=market_order_data)
+
     return {"prediction": prediction.item(0)}
 
 
