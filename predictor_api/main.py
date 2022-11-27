@@ -171,6 +171,8 @@ def handler():
 
     api.submit_order(order_data=market_order_data)
 
+    logger.warning(f"Money is : {money}")
+
     return {"prediction": prediction.item(0)}
 
 
