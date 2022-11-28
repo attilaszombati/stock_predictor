@@ -2,6 +2,7 @@
 import logging
 import time
 from datetime import datetime
+import calendar
 
 import pandas as pd
 import snscrape.modules.twitter as sntwitter
@@ -67,10 +68,9 @@ class TwitterScraperBase:
             yield tweet
 
     @staticmethod
-    def utc_timestamp(ts: str, DATETIME_FORMAT: str):
-        import datetime, calendar
-        ts = datetime.datetime.utcnow() if ts is None else datetime.datetime.strptime(ts, DATETIME_FORMAT)
-        return calendar.timegm(ts.utctimetuple())
+    def utc_timestamp(time_stamp: str, datetime_format: str):
+        time_stamp = datetime.utcnow() if time_stamp is None else datetime.strptime(time_stamp, datetime_format)
+        return calendar.timegm(time_stamp.utctimetuple())
 
     @staticmethod
     def check_mentioned(data):
