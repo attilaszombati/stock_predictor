@@ -67,6 +67,12 @@ class TwitterScraperBase:
             yield tweet
 
     @staticmethod
+    def utc_timestamp(ts: str, DATETIME_FORMAT: str):
+        import datetime, calendar
+        ts = datetime.datetime.utcnow() if ts is None else datetime.datetime.strptime(ts, DATETIME_FORMAT)
+        return calendar.timegm(ts.utctimetuple())
+
+    @staticmethod
     def check_mentioned(data):
         if data is not None:
             return "".join([mentioned.username for mentioned in data])
@@ -139,7 +145,7 @@ class TwitterScraperBase:
     def load_scraped_data(self, scraped_batch, engine: Engine):
         with Session(engine) as sess:
             for fixture in self.create_models_from_scraping(
-                scraping_batch=scraped_batch
+                    scraping_batch=scraped_batch
             ):
                 sess.add(fixture)
                 sess.commit()
@@ -163,7 +169,7 @@ class TwitterNewsScraper(TwitterScraperBase):
         )
         return self.query_time
 
-    def scraping_data_news(self, until_day=1):
+    def scraping_data_news(self):
         if self.last_scraped_tweet:
             since_time = self.set_query_time_from_last_scraped()
         else:
@@ -171,10 +177,12 @@ class TwitterNewsScraper(TwitterScraperBase):
                 f"Check the fingerprint file for the user : {self.user}"
             )
 
-        day_in_timestamp = 86400
-        until_time = int(time.time() - (day_in_timestamp * until_day))
+        date_format = "%Y-%m-%d 05:00:00"
+        date = datetime.fromtimestamp(time.time()).strftime(date_format)
+        until_time = self.utc_timestamp(date, date_format)
+
         logger.warning(
-            f'until_time : {datetime.utcfromtimestamp(until_time).strftime("%Y-%m-%d %H:%M:%S")}'
+            f'until_time : {datetime.utcfromtimestamp(until_time).strftime(date_format)}'
         )
         query = f"from:{self.user} {since_time} until_time:{until_time}"
         logger.warning(f"The search query is : {query}")
@@ -229,7 +237,7 @@ if __name__ == "__main__":
             scraper = TwitterNewsScraper(
                 user=twitter_user,
                 database_session=session,
-                last_scraped_tweet="2022-11-08 17:06:01",
+                last_scraped_tweet="2022-11-25 17:06:01",
             )
             batch = scraper.scraping_data_news()
         else:
