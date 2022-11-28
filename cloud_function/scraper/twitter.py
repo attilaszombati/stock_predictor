@@ -69,7 +69,11 @@ class TwitterScraperBase:
 
     @staticmethod
     def utc_timestamp(time_stamp: str, datetime_format: str):
-        time_stamp = datetime.utcnow() if time_stamp is None else datetime.strptime(time_stamp, datetime_format)
+        time_stamp = (
+            datetime.utcnow()
+            if time_stamp is None
+            else datetime.strptime(time_stamp, datetime_format)
+        )
         return calendar.timegm(time_stamp.utctimetuple())
 
     @staticmethod
@@ -145,7 +149,7 @@ class TwitterScraperBase:
     def load_scraped_data(self, scraped_batch, engine: Engine):
         with Session(engine) as sess:
             for fixture in self.create_models_from_scraping(
-                    scraping_batch=scraped_batch
+                scraping_batch=scraped_batch
             ):
                 sess.add(fixture)
                 sess.commit()
@@ -182,7 +186,7 @@ class TwitterNewsScraper(TwitterScraperBase):
         until_time = self.utc_timestamp(date, date_format)
 
         logger.warning(
-            f'until_time : {datetime.utcfromtimestamp(until_time).strftime(date_format)}'
+            f"until_time : {datetime.utcfromtimestamp(until_time).strftime(date_format)}"
         )
         query = f"from:{self.user} {since_time} until_time:{until_time}"
         logger.warning(f"The search query is : {query}")
