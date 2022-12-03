@@ -77,7 +77,7 @@ jobs:
       - checkout
       - run:
           name: Install Python Dependencies
-          command: pip install -r predictor_api/requirements.txt
+          command: pip install -r predictor_api/requirements.txt && pip install ./predictor_api
       - run:
           name: Run tests
           command: export PYTHONPATH=$PYTHONPATH:/predictor_api && ./predictor_api/test.sh

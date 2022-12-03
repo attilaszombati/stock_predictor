@@ -17,7 +17,6 @@ setuptools.setup(
     packages=find_packages(),
     python_requires=">3.7.0, <3.11.0",
     install_requires=[
-        "peewee==3.14.4",
         "pandas==1.4.1",
         "snscrape~=0.4.3.20220106",
         "pytest==6.2.4",
