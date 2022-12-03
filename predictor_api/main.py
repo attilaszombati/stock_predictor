@@ -87,7 +87,8 @@ def create_long_position_if_needed(
             symbol=symbol, notional=money[-1], side=OrderSide.BUY
         )
         return market_order_data
-    elif len(sell_orders) == 1:
+
+    if len(sell_orders) == 1:
         logger.warning("There are open sell orders, cancelling them")
         position = api.get_all_positions()
         new_money = position[0].market_value
@@ -97,8 +98,8 @@ def create_long_position_if_needed(
             symbol=symbol, notional=money[-1], side=OrderSide.BUY
         )
         return market_order_data
-    else:
-        logger.warning("There are open buy orders, doing nothing")
+
+    logger.warning("There are open buy orders, doing nothing")
 
 
 def create_short_position_if_needed(
@@ -110,7 +111,8 @@ def create_short_position_if_needed(
             symbol=symbol, notional=money[-1], side=OrderSide.SELL
         )
         return market_order_data
-    elif len(buy_orders) == 1:
+
+    if len(buy_orders) == 1:
         logger.warning("There are open buy orders, cancelling them")
         position = api.get_all_positions()
         new_money = position[0].market_value
@@ -120,8 +122,8 @@ def create_short_position_if_needed(
             symbol=symbol, notional=money[-1], side=OrderSide.SELL
         )
         return market_order_data
-    else:
-        logger.warning("There are open sell orders, doing nothing")
+
+    logger.warning("There are open sell orders, doing nothing")
 
 
 def create_order_request(symbol: str, notional: int, side: OrderSide):
