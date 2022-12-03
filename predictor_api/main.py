@@ -1,6 +1,7 @@
 # pylint:disable=no-name-in-module, unexpected-keyword-arg, invalid-name, too-many-locals
 import logging
 import os
+from typing import Union
 
 import numpy as np
 from alpaca.trading import MarketOrderRequest, TimeInForce, TradingClient
@@ -80,7 +81,7 @@ def get_data_from_big_query():
 
 def create_long_position_if_needed(
     api: TradingClient, buy_orders: list, sell_orders: list, money: list, symbol: str
-):
+) -> Union[MarketOrderRequest, None]:
     if len(buy_orders) == 0:
         logger.warning("No open orders, creating one")
         market_order_data = create_order_request(
@@ -100,11 +101,12 @@ def create_long_position_if_needed(
         return market_order_data
 
     logger.warning("There are open buy orders, doing nothing")
+    return None
 
 
 def create_short_position_if_needed(
     api: TradingClient, buy_orders: list, sell_orders: list, money: list, symbol: str
-):
+) -> Union[MarketOrderRequest, None]:
     if len(sell_orders) == 0:
         logger.warning("No open orders, creating one")
         market_order_data = create_order_request(
@@ -124,6 +126,7 @@ def create_short_position_if_needed(
         return market_order_data
 
     logger.warning("There are open sell orders, doing nothing")
+    return None
 
 
 def create_order_request(symbol: str, notional: int, side: OrderSide):
