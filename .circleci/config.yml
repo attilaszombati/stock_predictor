@@ -65,7 +65,7 @@ jobs:
       - checkout
       - run:
           name: Install Python Dependencies
-          command: pip install -r alpaca_data_function/requirements.txt
+          command: pip install -r alpaca_data_function/requirements.txt && pip install ./alpaca_data_function
       - run:
           name: Run tests
           command: export PYTHONPATH=$PYTHONPATH:/alpaca_data_function && ./alpaca_data_function/test.sh
