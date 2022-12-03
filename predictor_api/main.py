@@ -39,7 +39,7 @@ def convert_to_np_array(twitter_data):
 
 
 def convert_input_to_lstm_format(dataframe):
-    FEATURE_START_INDEX = 8
+    FEATURE_START_INDEX = 2
     DATES_COLUMN = 0
 
     df_as_np = dataframe.to_numpy()
