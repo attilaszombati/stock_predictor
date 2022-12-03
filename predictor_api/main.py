@@ -6,8 +6,7 @@ import numpy as np
 from alpaca.trading import (
     MarketOrderRequest,
     TimeInForce,
-    TradingClient,
-    GetOrdersRequest,
+    TradingClient
 )
 from alpaca.trading.enums import OrderSide
 from flask import Flask, request
@@ -111,12 +110,10 @@ def handler():
         url_override="https://paper-api.alpaca.markets",
     )
 
-    request_params_buy = GetOrdersRequest(status="open", side=OrderSide.BUY)
+    positions = api.get_all_positions()
 
-    request_params_sell = GetOrdersRequest(status="open", side=OrderSide.SELL)
-
-    buy_orders = api.get_orders(filter=request_params_buy)
-    sell_orders = api.get_orders(filter=request_params_sell)
+    buy_orders = [pos for pos in positions if pos.side == 'long']
+    sell_orders = [pos for pos in positions if pos.side == 'short']
 
     if prediction.item(0) > prev_day_close:
         logger.warning("Prediction is higher than previous day close")
