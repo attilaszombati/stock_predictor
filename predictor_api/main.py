@@ -124,7 +124,7 @@ def handler():
             logger.warning("No open orders, creating one")
             submit_order = True
             market_order_data = MarketOrderRequest(
-                symbol="BTC/USD",
+                symbol="TSLA",
                 notional=money[-1],
                 side=OrderSide.BUY,
                 time_in_force=TimeInForce.GTC,
@@ -137,7 +137,7 @@ def handler():
             money.append(new_money)
             api.close_all_positions(cancel_orders=True)
             market_order_data = MarketOrderRequest(
-                symbol="BTC/USD",
+                symbol="TSLA",
                 notional=money[-1],
                 side=OrderSide.BUY,
                 time_in_force=TimeInForce.GTC,
@@ -151,7 +151,7 @@ def handler():
             logger.warning("No open orders, creating one")
             submit_order = True
             market_order_data = MarketOrderRequest(
-                symbol="BTC/USD",
+                symbol="TSLA",
                 notional=money[-1],
                 side=OrderSide.SELL,
                 time_in_force=TimeInForce.GTC,
@@ -164,7 +164,7 @@ def handler():
             money.append(new_money)
             api.close_all_positions(cancel_orders=True)
             market_order_data = MarketOrderRequest(
-                symbol="BTC/USD",
+                symbol="TSLA",
                 notional=money[-1],
                 side=OrderSide.SELL,
                 time_in_force=TimeInForce.GTC,
