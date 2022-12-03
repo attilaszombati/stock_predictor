@@ -115,11 +115,14 @@ def handler():
     buy_orders = [pos for pos in positions if pos.side == 'long']
     sell_orders = [pos for pos in positions if pos.side == 'short']
 
+    submit_order = False
+
     if prediction.item(0) > prev_day_close:
         logger.warning("Prediction is higher than previous day close")
 
         if len(buy_orders) == 0:
             logger.warning("No open orders, creating one")
+            submit_order = True
             market_order_data = MarketOrderRequest(
                 symbol="BTC/USD",
                 notional=money[-1],
@@ -127,6 +130,7 @@ def handler():
                 time_in_force=TimeInForce.GTC,
             )
         elif len(sell_orders) == 1:
+            submit_order = True
             logger.warning("There are open sell orders, cancelling them")
             position = api.get_all_positions()
             new_money = position[0].market_value
@@ -145,6 +149,7 @@ def handler():
 
         if len(sell_orders) == 0:
             logger.warning("No open orders, creating one")
+            submit_order = True
             market_order_data = MarketOrderRequest(
                 symbol="BTC/USD",
                 notional=money[-1],
@@ -153,6 +158,7 @@ def handler():
             )
         elif len(buy_orders) == 1:
             logger.warning("There are open buy orders, cancelling them")
+            submit_order = True
             position = api.get_all_positions()
             new_money = position[0].market_value
             money.append(new_money)
@@ -166,7 +172,8 @@ def handler():
         else:
             logger.warning("There are open sell orders, doing nothing")
 
-    api.submit_order(order_data=market_order_data)
+    if submit_order:
+        api.submit_order(order_data=market_order_data)
 
     logger.warning(f"Money is : {money}")
 
