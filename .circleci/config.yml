@@ -41,10 +41,12 @@ workflows:
 
   code-validation:
     jobs:
-      - python-test
+      - test-cloud-function
+      - test-alpaca-data-function
+      - test-predictor-api
 
 jobs:
-  python-test:
+  test-cloud-function:
     docker:
       - image: cimg/python:3.9.1
     steps:
@@ -55,6 +57,30 @@ jobs:
       - run:
           name: Run tests
           command: export PYTHONPATH=$PYTHONPATH:/cloud_function && ./cloud_function/test.sh
+
+  test-alpaca-data-function:
+    docker:
+      - image: cimg/python:3.9.1
+    steps:
+      - checkout
+      - run:
+          name: Install Python Dependencies
+          command: pip install -r alpaca_data_function/requirements.txt && pip install ./alpaca_data_function
+      - run:
+          name: Run tests
+          command: export PYTHONPATH=$PYTHONPATH:/alpaca_data_function && ./alpaca_data_function/test.sh
+
+  test-predictor-api:
+    docker:
+      - image: cimg/python:3.9.1
+    steps:
+      - checkout
+      - run:
+          name: Install Python Dependencies
+          command: pip install -r predictor_api/requirements.txt && pip install ./predictor_api
+      - run:
+          name: Run tests
+          command: export PYTHONPATH=$PYTHONPATH:/predictor_api && ./predictor_api/test.sh
 
   build_push_image_social_media_scraper:
     docker:
