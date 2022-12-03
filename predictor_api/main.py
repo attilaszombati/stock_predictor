@@ -3,11 +3,7 @@ import logging
 import os
 
 import numpy as np
-from alpaca.trading import (
-    MarketOrderRequest,
-    TimeInForce,
-    TradingClient
-)
+from alpaca.trading import MarketOrderRequest, TimeInForce, TradingClient
 from alpaca.trading.enums import OrderSide
 from flask import Flask, request
 from google.cloud import bigquery
@@ -22,7 +18,7 @@ PREDICTOR_BUCKET = "stock_predictor_bucket"
 MODEL_NAME = "TSLA_ELON_MUSK"
 
 
-def main(data, predictor_version: str):
+def get_predicted_data(data, predictor_version: str):
     logger.warning(f"Input data is : {data}")
     get_model_from_gcs = keras.models.load_model(
         f"gs://{PREDICTOR_BUCKET}/{MODEL_NAME}_{predictor_version}"
@@ -82,6 +78,61 @@ def get_data_from_big_query():
     return df
 
 
+def create_long_position_if_needed(
+    api: TradingClient, buy_orders: list, sell_orders: list, money: list, symbol: str
+):
+    if len(buy_orders) == 0:
+        logger.warning("No open orders, creating one")
+        market_order_data = create_order_request(
+            symbol=symbol, notional=money[-1], side=OrderSide.BUY
+        )
+        return market_order_data
+    elif len(sell_orders) == 1:
+        logger.warning("There are open sell orders, cancelling them")
+        position = api.get_all_positions()
+        new_money = position[0].market_value
+        money.append(new_money)
+        api.close_all_positions(cancel_orders=True)
+        market_order_data = create_order_request(
+            symbol=symbol, notional=money[-1], side=OrderSide.BUY
+        )
+        return market_order_data
+    else:
+        logger.warning("There are open buy orders, doing nothing")
+
+
+def create_short_position_if_needed(
+    api: TradingClient, buy_orders: list, sell_orders: list, money: list, symbol: str
+):
+    if len(sell_orders) == 0:
+        logger.warning("No open orders, creating one")
+        market_order_data = create_order_request(
+            symbol=symbol, notional=money[-1], side=OrderSide.SELL
+        )
+        return market_order_data
+    elif len(buy_orders) == 1:
+        logger.warning("There are open buy orders, cancelling them")
+        position = api.get_all_positions()
+        new_money = position[0].market_value
+        money.append(new_money)
+        api.close_all_positions(cancel_orders=True)
+        market_order_data = create_order_request(
+            symbol=symbol, notional=money[-1], side=OrderSide.SELL
+        )
+        return market_order_data
+    else:
+        logger.warning("There are open sell orders, doing nothing")
+
+
+def create_order_request(symbol: str, notional: int, side: OrderSide):
+    return MarketOrderRequest(
+        symbol=symbol,
+        notional=notional,
+        side=side,
+        time_in_force=TimeInForce.GTC,
+    )
+
+
 @app.route("/", methods=["POST"])
 def handler():
     storage = CloudStorageUtils()
@@ -96,7 +147,9 @@ def handler():
     if twitter_data_df.empty:
         return "No data to predict, next prediction will be in 24 hours"
     input_dataset = convert_input_to_lstm_format(twitter_data_df)
-    prediction = main(data=input_dataset, predictor_version=predictor_version)
+    prediction = get_predicted_data(
+        data=input_dataset, predictor_version=predictor_version
+    )
     logger.warning(f"The predicted data is : {prediction.item(0)}")
 
     money = [1000]
@@ -112,68 +165,33 @@ def handler():
 
     positions = api.get_all_positions()
 
-    buy_orders = [pos for pos in positions if pos.side == 'long']
-    sell_orders = [pos for pos in positions if pos.side == 'short']
+    buy_orders = [pos for pos in positions if pos.side == "long"]
+    sell_orders = [pos for pos in positions if pos.side == "short"]
 
-    submit_order = False
+    symbol = "TSLA"
 
     if prediction.item(0) > prev_day_close:
         logger.warning("Prediction is higher than previous day close")
+        order = create_long_position_if_needed(
+            api=api,
+            buy_orders=buy_orders,
+            sell_orders=sell_orders,
+            money=money,
+            symbol=symbol,
+        )
 
-        if len(buy_orders) == 0:
-            logger.warning("No open orders, creating one")
-            submit_order = True
-            market_order_data = MarketOrderRequest(
-                symbol="TSLA",
-                notional=money[-1],
-                side=OrderSide.BUY,
-                time_in_force=TimeInForce.GTC,
-            )
-        elif len(sell_orders) == 1:
-            submit_order = True
-            logger.warning("There are open sell orders, cancelling them")
-            position = api.get_all_positions()
-            new_money = position[0].market_value
-            money.append(new_money)
-            api.close_all_positions(cancel_orders=True)
-            market_order_data = MarketOrderRequest(
-                symbol="TSLA",
-                notional=money[-1],
-                side=OrderSide.BUY,
-                time_in_force=TimeInForce.GTC,
-            )
-        else:
-            logger.warning("There are open buy orders, doing nothing")
     else:
         logger.warning("Prediction is lower than previous day close")
+        order = create_short_position_if_needed(
+            api=api,
+            buy_orders=buy_orders,
+            sell_orders=sell_orders,
+            money=money,
+            symbol=symbol,
+        )
 
-        if len(sell_orders) == 0:
-            logger.warning("No open orders, creating one")
-            submit_order = True
-            market_order_data = MarketOrderRequest(
-                symbol="TSLA",
-                notional=money[-1],
-                side=OrderSide.SELL,
-                time_in_force=TimeInForce.GTC,
-            )
-        elif len(buy_orders) == 1:
-            logger.warning("There are open buy orders, cancelling them")
-            submit_order = True
-            position = api.get_all_positions()
-            new_money = position[0].market_value
-            money.append(new_money)
-            api.close_all_positions(cancel_orders=True)
-            market_order_data = MarketOrderRequest(
-                symbol="TSLA",
-                notional=money[-1],
-                side=OrderSide.SELL,
-                time_in_force=TimeInForce.GTC,
-            )
-        else:
-            logger.warning("There are open sell orders, doing nothing")
-
-    if submit_order:
-        api.submit_order(order_data=market_order_data)
+    if order is not None:
+        api.submit_order(order_data=order)
 
     logger.warning(f"Money is : {money}")
 

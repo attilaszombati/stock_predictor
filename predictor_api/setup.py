@@ -31,6 +31,6 @@ setuptools.setup(
         "black==22.10.0",
         "alpaca-trade-api==2.3.0",
         "alpaca-py==0.6.0",
-        "lint==1.2.1"
+        "lint==1.2.1",
     ],
 )
